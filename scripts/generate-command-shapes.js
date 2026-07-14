@@ -48,7 +48,7 @@ function firstSentence(body) {
 function skillFile(name, body) {
   return [
     '---',
-    `name: ${name}`,
+    `name: '${name.replace(/'/g, "''")}'`,
     `description: '${firstSentence(body)}'`,
     '---',
     '',

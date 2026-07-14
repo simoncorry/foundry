@@ -1,5 +1,5 @@
 ---
-name: security-scan
+name: 'security-scan'
 description: 'Single-round adversarial security scan.'
 ---
 

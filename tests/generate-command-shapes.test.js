@@ -40,7 +40,7 @@ test('generates a byte-identical Claude copy and a frontmattered Codex skill', (
     assert.equal(readFileSync(join(root, '.claude', 'commands', 'alpha.md'), 'utf8'), body);
 
     const skill = readFileSync(join(root, '.agents', 'skills', 'alpha', 'SKILL.md'), 'utf8');
-    assert.ok(skill.startsWith("---\nname: alpha\ndescription: 'Run the alpha stage.'\n---\n"));
+    assert.ok(skill.startsWith("---\nname: 'alpha'\ndescription: 'Run the alpha stage.'\n---\n"));
     assert.ok(skill.includes('Generated from .cursor/commands/alpha.md'));
     assert.ok(skill.endsWith(body));
 

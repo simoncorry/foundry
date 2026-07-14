@@ -1,5 +1,5 @@
 ---
-name: wrap-up
+name: 'wrap-up'
 description: 'When the human types `/wrap-up` (or "wrap up", "done for today", "good night"), close the session.'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: challenge-implementation-5
+name: 'challenge-implementation-5'
 description: 'Round 5 of implementation-challenge.'
 ---
 

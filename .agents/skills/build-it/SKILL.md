@@ -1,5 +1,5 @@
 ---
-name: build-it
+name: 'build-it'
 description: 'When the human types `/build-it` (or "build it", "build this", "implement it", "go build"), the plan is settled.'
 ---
 

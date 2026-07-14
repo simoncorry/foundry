@@ -1,5 +1,5 @@
 ---
-name: challenge-plan-3
+name: 'challenge-plan-3'
 description: 'Round 3 of plan-challenge.'
 ---
 

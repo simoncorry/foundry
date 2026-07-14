@@ -1,5 +1,5 @@
 ---
-name: test-it
+name: 'test-it'
 description: 'When the human types `/test-it` (or "test it", "cover it", "write tests"), the implementation from build-it is in place and this stage proves it works.'
 ---
 

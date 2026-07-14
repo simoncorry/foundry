@@ -1,5 +1,5 @@
 ---
-name: quiz
+name: 'quiz'
 description: 'When the human types `/quiz` (or "quiz me"), build a comprehension quiz on a recent change and teach through the grading.'
 ---
 

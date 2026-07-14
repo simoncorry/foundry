@@ -1,5 +1,5 @@
 ---
-name: handoff
+name: 'handoff'
 description: 'When the human types `/handoff` (or "next session", "what''s next", "handoff note"), produce a copy-paste markdown block for the next session.'
 ---
 

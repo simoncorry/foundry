@@ -39,7 +39,7 @@ Reviews only work when each round looks from a genuinely different angle. The an
 11. check whether the earlier rounds' fixes broke anything new
 12. does this convention reach every place the mechanism reaches?
 
-Every round states its angle at the top and must differ from all prior rounds. When an angle repeats, you find nothing; when it's genuinely different, you find the next layer. Every round ends with its structured count line, verbatim: plan rounds report `Re-verified N claims, demoted M to uncertainty.` and implementation rounds report `Bugs found: K. Bugs fixed: K.` The human scans for those lines; don't restyle them.
+Every round states its angle at the top and must differ from all prior rounds. When an angle repeats, you find nothing; when it's genuinely different, you find the next layer. Every round ends with its structured count lines, verbatim: plan rounds report `Re-verified N claims, demoted M to uncertainty.` and implementation rounds report that same line plus `Bugs found: K. Bugs fixed: K.` beneath it. The human scans for those lines; don't restyle them.
 
 ## The flow guarantee
 

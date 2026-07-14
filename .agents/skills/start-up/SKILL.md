@@ -1,5 +1,5 @@
 ---
-name: start-up
+name: 'start-up'
 description: 'Run the session start-up.'
 ---
 

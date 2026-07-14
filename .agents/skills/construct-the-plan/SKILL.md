@@ -1,5 +1,5 @@
 ---
-name: construct-the-plan
+name: 'construct-the-plan'
 description: 'Construct the plan.'
 ---
 

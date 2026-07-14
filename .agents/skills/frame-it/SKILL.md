@@ -1,5 +1,5 @@
 ---
-name: frame-it
+name: 'frame-it'
 description: 'When the human types `/frame-it` (or "frame it", "frame this up", "help me scope this"), run the interview stage against the plan drafted earlier in this conversation.'
 ---
 
