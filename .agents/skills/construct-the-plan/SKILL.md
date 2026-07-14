@@ -1,6 +1,6 @@
 ---
 name: construct-the-plan
-description: "Construct the plan."
+description: 'Construct the plan.'
 ---
 
 <!-- Generated from .cursor/commands/construct-the-plan.md. Edit there and run: npm run shapes -->

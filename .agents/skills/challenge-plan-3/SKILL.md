@@ -1,6 +1,6 @@
 ---
 name: challenge-plan-3
-description: "Round 3 of plan-challenge."
+description: 'Round 3 of plan-challenge.'
 ---
 
 <!-- Generated from .cursor/commands/challenge-plan-3.md. Edit there and run: npm run shapes -->

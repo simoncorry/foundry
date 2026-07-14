@@ -1,6 +1,6 @@
 ---
 name: security-scan
-description: "Single-round adversarial security scan."
+description: 'Single-round adversarial security scan.'
 ---
 
 <!-- Generated from .cursor/commands/security-scan.md. Edit there and run: npm run shapes -->

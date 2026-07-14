@@ -1,6 +1,6 @@
 ---
 name: quiz
-description: "When the human types `/quiz` (or 'quiz me'), build a comprehension quiz on a recent change and teach through the grading."
+description: 'When the human types `/quiz` (or "quiz me"), build a comprehension quiz on a recent change and teach through the grading.'
 ---
 
 <!-- Generated from .cursor/commands/quiz.md. Edit there and run: npm run shapes -->

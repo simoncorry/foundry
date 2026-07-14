@@ -1,6 +1,6 @@
 ---
 name: wrap-up
-description: "When the human types `/wrap-up` (or 'wrap up', 'done for today', 'good night'), close the session."
+description: 'When the human types `/wrap-up` (or "wrap up", "done for today", "good night"), close the session.'
 ---
 
 <!-- Generated from .cursor/commands/wrap-up.md. Edit there and run: npm run shapes -->

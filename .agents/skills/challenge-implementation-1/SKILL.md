@@ -1,6 +1,6 @@
 ---
 name: challenge-implementation-1
-description: "Round 1 of implementation-challenge."
+description: 'Round 1 of implementation-challenge.'
 ---
 
 <!-- Generated from .cursor/commands/challenge-implementation-1.md. Edit there and run: npm run shapes -->

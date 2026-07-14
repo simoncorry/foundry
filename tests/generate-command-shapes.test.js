@@ -40,7 +40,7 @@ test('generates a byte-identical Claude copy and a frontmattered Codex skill', (
     assert.equal(readFileSync(join(root, '.claude', 'commands', 'alpha.md'), 'utf8'), body);
 
     const skill = readFileSync(join(root, '.agents', 'skills', 'alpha', 'SKILL.md'), 'utf8');
-    assert.ok(skill.startsWith('---\nname: alpha\ndescription: "Run the alpha stage."\n---\n'));
+    assert.ok(skill.startsWith("---\nname: alpha\ndescription: 'Run the alpha stage.'\n---\n"));
     assert.ok(skill.includes('Generated from .cursor/commands/alpha.md'));
     assert.ok(skill.endsWith(body));
 
@@ -51,14 +51,15 @@ test('generates a byte-identical Claude copy and a frontmattered Codex skill', (
   }
 });
 
-test('description falls back to the whole first line when it has no sentence break, and escapes double quotes', () => {
+test('description falls back to the whole first line when it has no sentence break, and survives hostile punctuation', () => {
   const root = makeFixture();
   try {
-    writeFileSync(join(root, '.cursor', 'commands', 'beta.md'), 'When the human says "go", start\nmore text\n');
+    writeFileSync(join(root, '.cursor', 'commands', 'beta.md'), "When the human says 'go', use \\$skill to start\nmore text\n");
     const { code } = run(root);
     assert.equal(code, 0);
     const skill = readFileSync(join(root, '.agents', 'skills', 'beta', 'SKILL.md'), 'utf8');
-    assert.ok(skill.includes("description: \"When the human says 'go', start\""));
+    // Single-quoted YAML: quotes double, backslashes stay literal and inert.
+    assert.ok(skill.includes("description: 'When the human says ''go'', use \\$skill to start'"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

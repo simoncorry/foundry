@@ -1,6 +1,6 @@
 ---
 name: start-up
-description: "Run the session start-up."
+description: 'Run the session start-up.'
 ---
 
 <!-- Generated from .cursor/commands/start-up.md. Edit there and run: npm run shapes -->

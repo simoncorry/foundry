@@ -1,6 +1,6 @@
 ---
 name: frame-it
-description: "When the human types `/frame-it` (or 'frame it', 'frame this up', 'help me scope this'), run the interview stage against the plan drafted earlier in this conversation."
+description: 'When the human types `/frame-it` (or "frame it", "frame this up", "help me scope this"), run the interview stage against the plan drafted earlier in this conversation.'
 ---
 
 <!-- Generated from .cursor/commands/frame-it.md. Edit there and run: npm run shapes -->

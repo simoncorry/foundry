@@ -35,18 +35,21 @@ const POLICY_YAML = 'policy:\n  allow_implicit_invocation: false\n';
 
 // The description is the command's first sentence; Codex shows it in the
 // skill selector. Kept to one sentence so the selector stays readable.
+// Emitted single-quoted: YAML's single-quoted style has exactly one escape
+// (a doubled quote), so backslashes and other punctuation in a command's
+// first line can't break the frontmatter parse.
 function firstSentence(body) {
   const firstLine = body.split('\n').find((l) => l.trim().length > 0) ?? '';
   const match = firstLine.match(/^(.+?[.!?])(\s|$)/);
   const sentence = (match ? match[1] : firstLine).trim();
-  return sentence.replace(/"/g, "'");
+  return sentence.replace(/'/g, "''");
 }
 
 function skillFile(name, body) {
   return [
     '---',
     `name: ${name}`,
-    `description: "${firstSentence(body)}"`,
+    `description: '${firstSentence(body)}'`,
     '---',
     '',
     `<!-- Generated from .cursor/commands/${name}.md. Edit there and run: npm run shapes -->`,

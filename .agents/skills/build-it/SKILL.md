@@ -1,6 +1,6 @@
 ---
 name: build-it
-description: "When the human types `/build-it` (or 'build it', 'build this', 'implement it', 'go build'), the plan is settled."
+description: 'When the human types `/build-it` (or "build it", "build this", "implement it", "go build"), the plan is settled.'
 ---
 
 <!-- Generated from .cursor/commands/build-it.md. Edit there and run: npm run shapes -->

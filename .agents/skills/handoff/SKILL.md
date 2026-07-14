@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "When the human types `/handoff` (or 'next session', 'what's next', 'handoff note'), produce a copy-paste markdown block for the next session."
+description: 'When the human types `/handoff` (or "next session", "what''s next", "handoff note"), produce a copy-paste markdown block for the next session.'
 ---
 
 <!-- Generated from .cursor/commands/handoff.md. Edit there and run: npm run shapes -->
