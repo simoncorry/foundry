@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "shapes": "node scripts/generate-command-shapes.js",
-    "check": "node scripts/generate-command-shapes.js --confirm"
+    "test": "node --test",
+    "check": "node --test && node scripts/generate-command-shapes.js --confirm"
   }
 }

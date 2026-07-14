@@ -24,7 +24,9 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync } from 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+// SHAPES_ROOT exists so tests can run the generator against a fixture tree
+// instead of the real repo. Unset means the repo this script lives in.
+const root = process.env.SHAPES_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourceDir = join(root, '.cursor', 'commands');
 const claudeDir = join(root, '.claude', 'commands');
 const skillsDir = join(root, '.agents', 'skills');
