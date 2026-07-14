@@ -1,0 +1,12 @@
+{
+  "name": "foundry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An agent process for building software meant to last. Plain-markdown commands for Cursor, Claude Code, and Codex.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "shapes": "node scripts/generate-command-shapes.js",
+    "check": "node scripts/generate-command-shapes.js --confirm"
+  }
+}
