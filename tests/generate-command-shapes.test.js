@@ -92,6 +92,20 @@ test('confirm mode fails when a generated copy is edited directly', () => {
   }
 });
 
+test('confirm mode fails on an orphan file no source produces', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(join(root, '.cursor', 'commands', 'alpha.md'), 'First sentence here. Second.\n');
+    run(root);
+    writeFileSync(join(root, '.claude', 'commands', 'stray.md'), 'hand-written, no source\n');
+    const confirm = run(root, ['--confirm']);
+    assert.equal(confirm.code, 1);
+    assert.ok(confirm.stdout.includes('no source produces this file'));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('confirm mode fails when a shape is missing entirely', () => {
   const root = makeFixture();
   try {

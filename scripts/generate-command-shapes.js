@@ -76,6 +76,27 @@ function expected() {
   return files;
 }
 
+// Orphan scan: confirm must also catch files sitting in the generated
+// folders that no source produces (a hand-written stray passes a
+// generated-files-only walk silently; a fresh-context review caught this).
+function orphans(files) {
+  const found = [];
+  const generatedDirs = [claudeDir, skillsDir];
+  for (const dir of generatedDirs) {
+    if (!existsSync(dir)) continue;
+    const stack = [dir];
+    while (stack.length > 0) {
+      const current = stack.pop();
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        const full = join(current, entry.name);
+        if (entry.isDirectory()) stack.push(full);
+        else if (!files.has(full)) found.push(full);
+      }
+    }
+  }
+  return found;
+}
+
 const confirm = process.argv.includes('--confirm');
 const files = expected();
 let drift = 0;
@@ -90,6 +111,13 @@ for (const [path, content] of files) {
   } else {
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, content);
+  }
+}
+
+if (confirm) {
+  for (const stray of orphans(files)) {
+    drift += 1;
+    console.error(`[shapes] DRIFT: ${stray.replace(root + '/', '')} (no source produces this file)`);
   }
 }
 
