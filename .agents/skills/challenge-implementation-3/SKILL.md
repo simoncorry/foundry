@@ -1,3 +1,10 @@
+---
+name: challenge-implementation-3
+description: "Round 3 of implementation-challenge."
+---
+
+<!-- Generated from .cursor/commands/challenge-implementation-3.md. Edit there and run: npm run shapes -->
+
 Round 3 of implementation-challenge. Are you 200% sure you've covered this from every angle? Trace through the changes again from the round-3 angle. Fix what you find.
 
 ## Voice
