@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isoWeekOf, weekFileName, parseLog } from '../scripts/rotate-sessions.js';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -163,6 +163,21 @@ test('the loss check refuses when an archive would swallow an appended entry', (
   assert.equal(r.code, 1);
   assert.ok(r.out.includes('LOSS CHECK FAILED'));
   assert.equal(logAfter, logBefore, 'the log is untouched after a refused rotation');
+});
+
+test('importing the module never runs a rotation', () => {
+  // The run-guard must tell "node scripts/rotate-sessions.js" apart from an
+  // import, on every Node version. Import against a fixture that WOULD
+  // rotate; if the guard is broken, history/ appears.
+  const log = `${PREAMBLE}\n## ${isoDate(9)}: Old\n\nBody.\n`;
+  const root = makeFixture(log);
+  execFileSync('node', ['--input-type=module', '-e', `await import(${JSON.stringify(pathToFileURL(script).href)})`], {
+    env: { ...process.env, SESSIONS_ROOT: root },
+    encoding: 'utf8',
+  });
+  const historyExists = existsSync(join(root, 'docs', 'sessions', 'history'));
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(historyExists, false, 'import alone must not rotate');
 });
 
 test('parseLog splits entries and keeps preamble separate', () => {

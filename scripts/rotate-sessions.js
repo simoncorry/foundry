@@ -34,7 +34,7 @@
 
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 // SESSIONS_ROOT lets the tests point the script at a fixture tree.
@@ -190,4 +190,9 @@ function main() {
   }
 }
 
-if (import.meta.main) main();
+// Run only when invoked directly (node scripts/rotate-sessions.js), never on
+// import. import.meta.main would be the modern way to say this, but older Node
+// versions leave it undefined, which turns the script into a silent no-op.
+// Comparing module URL to argv works on every Node version this repo supports.
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedDirectly) main();
