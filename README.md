@@ -12,7 +12,7 @@ Start up, construct the plan, frame it (the agent interviews you), challenge the
 
 Every command is a plain markdown file. Cursor and Claude Code read their command folders the moment you open the repo. Codex reads each command as a skill you invoke by hand. Any other tool works by pasting a command file into the chat. Details in `docs/`.
 
-One rule if you edit anything: `.cursor/commands/` is the source of truth. The Claude and Codex shapes are generated from it (`npm run shapes`), and `npm run check` fails if they've been edited directly.
+One rule if you edit anything: `.cursor/commands/` is the source of truth. The Claude and Codex shapes are generated from it (`npm run shapes`), and `npm run check` fails if they've been edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push.
 
 ## Status
 

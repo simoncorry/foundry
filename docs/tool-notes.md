@@ -22,6 +22,10 @@ Cursor has a plan mode that drafts plans in a workspace folder outside your repo
 
 Cursor's blocking question dialog (the AskQuestion tool) has a documented bug where an idle connection timeout can answer the dialog by itself with a literal "Questions skipped by the user" response (Cursor forum threads 158485, 160858, 163317; confirmed by Cursor staff, reproduced on builds through mid-2026). The chain's rule (a timed-out question is HALT, never consent) exists because of this: if an unattended run can have its questions answered by a timeout, the only safe reading of a skipped question is "stop and wait for the human."
 
+## Cursor: transcript-driven jargon discovery (optional, not shipped)
+
+The phrase list grows through wrap-up's jargon step: the agent re-reads its own session and appends what it had to explain. That works in every tool. Cursor users who want extra signal can additionally scan Cursor's on-disk session transcripts for jargon candidates and feed those in too; it's a nice-to-have with real setup cost, so Foundry doesn't ship it and nothing depends on it.
+
 ## Cursor: hooks
 
 Cursor can inject session-start context via hooks, but injection has a confirmed timing race (staff-acknowledged, no fix as of July 2026) where the output silently never arrives. Treat hook injection as a nice-to-have and keep the manual path dependable: start-up runs its own checks rather than trusting anything was injected.
