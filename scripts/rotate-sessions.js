@@ -166,7 +166,7 @@ function main() {
   // Loss check: re-parse the staged writes and compare fingerprints.
   const after = [];
   after.push(...parseLog(stagedLog).entries.map(fingerprint));
-  for (const [path, text] of stagedArchives) {
+  for (const text of stagedArchives.values()) {
     after.push(...parseLog(text).entries.map(fingerprint));
   }
   if (existsSync(historyDir)) {
