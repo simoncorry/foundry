@@ -1,6 +1,6 @@
 # Sessions
 
-One entry per session, newest first, in plain English. Wrap-up writes an entry here at every close and start-up reads this file at every open; that pair is what makes sessions continuous even when a handoff note goes missing. Entries older than the current week move to `history/`, one file per week, so this file never outgrows a sitting. Entry shape: `## YYYY-MM-DD: Title`, one short paragraph, an optional `Friction:` line when something fought back.
+One entry per session, newest first, in plain English. Wrap-up writes an entry here at every close and start-up reads this file at every open; that pair is what makes sessions continuous even when a handoff note goes missing. Entries older than the current week move to a history folder beside this file, one file per week, so this file never outgrows a sitting. Entry shape: `## YYYY-MM-DD: Title`, one short paragraph, an optional `Friction:` line when something fought back.
 
 ## 2026-07-15: The memory system and the reference library
 
