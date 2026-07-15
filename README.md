@@ -36,13 +36,11 @@ Ten stages plus one rider, each a plain markdown command the agent reads. Ninete
 
 ## The design process, mirrored
 
-The mirror isn't decoration; the chain maps onto the frameworks designers already trust.
-
 The Double Diamond (British Design Council, 2005) splits work into understanding the problem and building the thing right. The chain's first half (start up, construct the plan, frame it, the plan challenges) is the first diamond; build it through hand off is the second. The d.school's five stages map too: Define is the plan, Prototype is build it, Test is test it.
 
 The crit is the cultural bridge. The challenge rounds are structured critique with the classic rules built in: fresh eyes, because the maker can't see their own blind spots; a declared focus, which is the angle each round states up front; critique that proposes, so rounds fix what they find; and documented outcomes, the count lines every round ends with.
 
-Two places the mirror bends, named honestly. The chain has no end-user research stage; that seat stays open for your own skills, and taste routes to you through frame it. And where design diverges by generating alternatives, the chain diverges by generating criticisms of one candidate.
+Two places the mirror bends. The chain has no end-user research stage; that seat stays open for your own skills, and taste routes to you through frame it. And where design diverges by generating alternatives, the chain diverges by generating criticisms of one candidate.
 
 ## How this differs from the built-in commands
 
