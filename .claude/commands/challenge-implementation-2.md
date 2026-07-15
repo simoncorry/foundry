@@ -14,7 +14,7 @@ If round 2 already ran earlier in this conversation, treat this invocation as a 
 
 ## Default angle for this round
 
-**Default: check whether the earlier rounds' fixes broke anything new.** The most reliable way to find round-2 bugs is to ask "did my own round-1 fixes introduce new failure modes?" Re-read every modification made during round 1, not just the original implementation. A fix written under review pressure gets less scrutiny than the code it fixes, which is exactly why this round exists.
+**Default: check whether the earlier rounds' fixes broke anything new.** The most reliable way to find round-2 bugs is to ask "did my own round-1 fixes introduce new ways to fail?" Re-read every modification made during round 1, not just the original implementation. A fix written under review pressure gets less scrutiny than the code it fixes, which is exactly why this round exists.
 
 If a different angle is clearly more relevant, override the default and say why.
 

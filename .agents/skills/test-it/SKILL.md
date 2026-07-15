@@ -25,7 +25,7 @@ Not all work has a sensible automated test, so sort the change before writing an
 
 1. **New testable behavior** (logic, data validation, pure functions, handlers): write tests (Step 2).
 2. **Pure visual** (styling, animation, layout): there's no unit-test surface, but "manual" is the trap this step closes. Reach for an automated browser check first (a scripted walk-through, a performance measurement, a rendered-output comparison). If the change has a runtime-cost surface a logic test can't see (per-frame work, paint cost, large inputs), measure it with a real tool rather than reasoning about it. Don't invent unit tests for pure visuals. One deliberate exception: if the plan carries a **Taste checkpoints** list (written by frame-it), those items belong to the human by definition; list them verbatim in the report's Deferred field rather than absorbing them.
-3. **Pure refactor, no behavior change**: the existing suite staying green is the proof. Note that, add at most one wiring smoke test, and don't write a fresh behavior suite.
+3. **Pure refactor, no behavior change**: the existing suite staying green is the proof. Say so in the report, add at most one wiring smoke test, and don't write a fresh behavior suite.
 4. **Data or config content**: lean on whatever structural validation the project has; add a new test only if the change introduces a new shape or a new code path, not for every content addition.
 5. **Mixed** (new logic plus new visuals): test the logic part, measure or defer the visual part, and say which is which.
 
