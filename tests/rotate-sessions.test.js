@@ -46,6 +46,11 @@ test('week math holds at year boundaries', () => {
   assert.deepEqual(isoWeekOf(2012, 1, 1), { weekYear: 2011, week: 52 });
   assert.equal(weekFileName(2014, 12, 29), '2015-W01.md');
   assert.equal(weekFileName(2012, 1, 1), '2011-W52.md');
+  // Three more published ISO 8601 vectors: a week-53 year on both sides
+  // of the boundary, and a January date landing in week 1 of its own year.
+  assert.deepEqual(isoWeekOf(2005, 1, 1), { weekYear: 2004, week: 53 });
+  assert.deepEqual(isoWeekOf(2010, 1, 3), { weekYear: 2009, week: 53 });
+  assert.deepEqual(isoWeekOf(2008, 12, 29), { weekYear: 2009, week: 1 });
 });
 
 test('entries older than the current week rotate into per-week files', () => {
@@ -163,6 +168,20 @@ test('the loss check refuses when an archive would swallow an appended entry', (
   assert.equal(r.code, 1);
   assert.ok(r.out.includes('LOSS CHECK FAILED'));
   assert.equal(logAfter, logBefore, 'the log is untouched after a refused rotation');
+});
+
+test('the extensionless spelling still runs the rotation', () => {
+  // "node scripts/rotate-sessions" resolves to this file but argv keeps the
+  // typed path; the run-guard must resolve it the same way Node does or this
+  // spelling becomes a silent no-op.
+  const log = `${PREAMBLE}\n## ${isoDate(9)}: Old\n\nBody.\n`;
+  const root = makeFixture(log);
+  const out = execFileSync('node', [script.replace(/\.js$/, ''), '--dry-run'], {
+    env: { ...process.env, SESSIONS_ROOT: root },
+    encoding: 'utf8',
+  });
+  rmSync(root, { recursive: true, force: true });
+  assert.ok(out.includes('would move'), 'extensionless invocation reached main()');
 });
 
 test('importing the module never runs a rotation', () => {

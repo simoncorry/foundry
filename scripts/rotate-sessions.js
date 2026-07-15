@@ -32,7 +32,7 @@
 //     projects that copied the commands in run this before their first
 //     entry exists.
 
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -191,8 +191,22 @@ function main() {
 }
 
 // Run only when invoked directly (node scripts/rotate-sessions.js), never on
-// import. import.meta.main would be the modern way to say this, but older Node
-// versions leave it undefined, which turns the script into a silent no-op.
-// Comparing module URL to argv works on every Node version this repo supports.
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+// import. import.meta.main is the modern way to say this, but it only exists
+// on Node 22.18 and 24.2 or newer; anything older leaves it undefined, which
+// would turn the script into a silent no-op. Comparing module URL to argv
+// works everywhere. Node resolves "scripts/rotate-sessions" (no extension) to
+// this file but leaves argv as typed, so resolve the argv path the same way
+// before comparing, or that spelling would silently skip main() too.
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(resolveArgvPath(process.argv[1])).href;
 if (invokedDirectly) main();
+
+function resolveArgvPath(argvPath) {
+  for (const candidate of [argvPath, `${argvPath}.js`]) {
+    try {
+      return realpathSync(candidate);
+    } catch {
+      // keep trying; fall through to the raw path
+    }
+  }
+  return argvPath;
+}
