@@ -1,0 +1,24 @@
+# The one check. Tests, shape sync, dead references, jargon gate: all of
+# it is `npm run check`, so CI runs exactly what you run locally. No
+# install step because Foundry has zero dependencies. `lts/*` tracks
+# whichever Node line is the active long-term-support release, so this
+# file never needs a version bump.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - run: npm run check
