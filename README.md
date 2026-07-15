@@ -50,6 +50,12 @@ Foundry's bet is the opposite. Every stage is a checkpoint with a name and a job
 
 So this isn't "mine beats theirs." If the work is throwaway, reach for `/goal`. It's faster and I mean that. Foundry earns its weight on projects meant to live on, where the working relationship between you and the agent is a real asset. One honest caveat: these platforms already let you write custom commands, so Foundry isn't a trick they can't do. It's a considered set of them that I use every day, plus the habits and the memory around them, so nobody has to repeat the months of trial and error it took to get here.
 
+## The memory and the library
+
+Two folders keep the chain from starting every session at zero. `docs/sessions/` is the log: wrap-up writes one plain-English entry per session, start-up reads it, and entries older than the current week rotate into one dated file per week (`scripts/rotate-sessions.js`, which refuses to run rather than misfile anything). `docs/wiki/` is the knowledge: one page per topic, grown by wrap-up's distill step, with an index the check enforces from both directions (a listed page that doesn't exist fails, and an existing page the index doesn't list fails).
+
+The wiki ships stocked. Three reference shelves come with the repo: engineering fundamentals (Brooks, Parnas, Naur, and the essential-vs-accidental and wrong-abstraction lenses the challenge rounds cite), design fundamentals (the Norman-to-Rams canon distilled for hierarchy, grouping, type, and color arguments), and motion fundamentals (easing, springs, gesture feel, and motion cost, adapted with credit from Emil Kowalski's and Meng To's MIT-licensed work). Start at [the index](docs/wiki/INDEX.md).
+
 ## What it costs
 
 The full chain is thorough and token-heavy. On a mid-size feature it plausibly lands in the low hundreds of thousands of tokens end to end, which is real money on metered plans. That's the honest price of ten review rounds and the bookkeeping around them.
@@ -62,7 +68,7 @@ Two ways in.
 
 Starting fresh? Clone this repo and build your project inside it. The commands are already wired: Cursor and Claude Code pick them up the moment you open the folder, and Codex reads each one as a skill you invoke by hand.
 
-Have a project already? Copy the three tool folders (`.cursor/commands/`, `.claude/commands/`, `.agents/`), the two rules files (`AGENTS.md`, `CLAUDE.md`), and `scripts/` into it. That's the whole install. The commands are plain markdown and need nothing running on your machine; `scripts/` rides along because the commands lean on its voice gate and phrase list, and Node is needed only at the moments you run those checks.
+Have a project already? Copy the three tool folders (`.cursor/commands/`, `.claude/commands/`, `.agents/`), the two rules files (`AGENTS.md`, `CLAUDE.md`), and `scripts/` into it, plus `docs/wiki/` if you want the reference library. That's the whole install. The commands are plain markdown and need nothing running on your machine; `scripts/` rides along because the commands lean on its voice gate, phrase list, and log rotation, and Node is needed only at the moments you run those checks. The sessions log creates itself at your first wrap-up.
 
 If your tool is something else entirely, the floor still holds: every command is plain markdown, so paste the file's contents into the chat and it runs. Per-tool wiring detail lives in [the tool notes](docs/tool-notes.md), and the ground rules the agent works under are in `AGENTS.md`. The chain assumes an agent that can read and write files, run shell commands, and follow a multi-step instruction; git helps but isn't required (see AGENTS.md § What the chain assumes, which carries the no-git shape).
 

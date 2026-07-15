@@ -22,6 +22,10 @@ An agent that can read and write files, run shell commands, and follow a multi-s
 
 Substantive work starts with a plan file at `docs/plans/<slug>.md`, written by the construct-the-plan command. Small frontmatter header: `id`, `status` (PROPOSED, IN_PROGRESS, SHIPPED), `created`. Two halves split by a horizontal rule: a narrative half for the human (what and why, in plain language), a working-memory half for the agent (files, steps, acceptance bars). Plans are scaffolding, not documentation; delete them when the work ships.
 
+## Memory
+
+Two standing folders, both fed by wrap-up and read by start-up. `docs/sessions/LOG.md` is chronology: one plain-English entry per session, rotated weekly into dated history files. `docs/wiki/` is distilled knowledge: one page per topic, every page listed in `docs/wiki/INDEX.md` (the check fails on orphans and dead links), seeded with the engineering, design, and motion reference shelves. Log entries say what happened; wiki pages say what we know. Consult the index when planning; distill durable lessons at wrap-up.
+
 ## The challenge rounds
 
 Reviews only work when each round looks from a genuinely different angle. The angle list:
