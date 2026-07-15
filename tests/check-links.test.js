@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -136,24 +136,30 @@ test('trailing sentence punctuation on a bare prose path is stripped', () => {
 
 test('a reference that climbs out of the repo with .. fails even when the outside file exists', () => {
   const root = makeFixture();
-  writeFileSync(join(root, '..', 'escapee.md'), 'outside\n');
-  writeFileSync(join(root, 'docs', 'page.md'), 'See `docs/../../escapee.md` and [link](../../escapee.md).\n');
+  // Unique per run so parallel runs of this file can't collide on a
+  // fixed name in the shared temp dir. The file must live OUTSIDE root
+  // (that's the escape being tested), but its name is derived from the
+  // unique root basename.
+  const outName = `escapee-${basename(root)}.md`;
+  writeFileSync(join(root, '..', outName), 'outside\n');
+  writeFileSync(join(root, 'docs', 'page.md'), `See \`docs/../../${outName}\` and [link](../../${outName}).\n`);
   const r = run(root);
-  rmSync(join(root, '..', 'escapee.md'), { force: true });
+  rmSync(join(root, '..', outName), { force: true });
   rmSync(root, { recursive: true, force: true });
   assert.equal(r.code, 1);
-  assert.ok(r.out.includes('escapee.md'));
+  assert.ok(r.out.includes(outName));
 });
 
 test('a plain-prose section citation cannot escape the repo either', () => {
   const root = makeFixture();
-  writeFileSync(join(root, '..', 'escapee-cite.md'), '# Out\n\n## Secret\n');
-  writeFileSync(join(root, 'docs', 'page.md'), 'Follow ../../escapee-cite.md § Secret here.\n');
+  const outName = `escapee-cite-${basename(root)}.md`;
+  writeFileSync(join(root, '..', outName), '# Out\n\n## Secret\n');
+  writeFileSync(join(root, 'docs', 'page.md'), `Follow ../../${outName} § Secret here.\n`);
   const r = run(root);
-  rmSync(join(root, '..', 'escapee-cite.md'), { force: true });
+  rmSync(join(root, '..', outName), { force: true });
   rmSync(root, { recursive: true, force: true });
   assert.equal(r.code, 1);
-  assert.ok(r.out.includes('escapee-cite.md'));
+  assert.ok(r.out.includes(outName));
 });
 
 test('the real repo passes its own link check', () => {
