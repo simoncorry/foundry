@@ -77,7 +77,11 @@ export function parseLog(content) {
       // trailing punctuation before the date check.
       const token = heading[1].replace(/[.,:;]+$/, '');
       const dateMatch = token.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      current = { headingDate: dateMatch, lines: [line], raw: heading[1] };
+      // Shape isn't enough: Date.UTC silently rolls impossible dates over
+      // (2026-02-30 becomes March 2nd), which would file the entry into the
+      // wrong week. Demote those to undated so the run refuses instead.
+      const valid = dateMatch && isRealDate(...dateMatch.slice(1).map(Number));
+      current = { headingDate: valid ? dateMatch : null, lines: [line], raw: heading[1] };
       continue;
     }
     if (current) current.lines.push(line);
@@ -85,6 +89,11 @@ export function parseLog(content) {
   }
   if (current) entries.push(current);
   return { preamble, entries };
+}
+
+function isRealDate(year, month, day) {
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
 }
 
 function fingerprint(entry) {

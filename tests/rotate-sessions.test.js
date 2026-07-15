@@ -80,6 +80,21 @@ test('a dateless entry heading refuses the whole run with nothing written', () =
   assert.equal(historyExists, false);
 });
 
+test('an impossible calendar date refuses instead of rolling over', () => {
+  // 2026-06-31 does not exist; Date.UTC would roll it to July 1 and file
+  // the entry into the wrong week. The parser must treat it as undated so
+  // the run refuses loudly.
+  const log = `${PREAMBLE}\n## 2026-06-31: Typo date\n\nBody.\n\n## ${isoDate(10)}: Real\n\nBody.\n`;
+  const root = makeFixture(log);
+  const before = readFileSync(join(root, 'docs', 'sessions', 'LOG.md'), 'utf8');
+  const r = run(root);
+  const untouched = readFileSync(join(root, 'docs', 'sessions', 'LOG.md'), 'utf8');
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('REFUSING'));
+  assert.equal(untouched, before);
+});
+
 test('everything in the current week is a no-op', () => {
   const log = `${PREAMBLE}\n## ${isoDate(0)}: Fresh\n\nBody.\n`;
   const root = makeFixture(log);
