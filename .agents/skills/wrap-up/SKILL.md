@@ -25,7 +25,7 @@ If any substantive commit skipped the implementation-challenge rounds, run the c
 
 ## Step 3: Grow the jargon list
 
-Re-read your own session: every term you stopped to explain, every gloss you wrote, every word the human asked about. Append each to `scripts/phrase-list.json` as a `{"bad": "<the phrase>", "good": "<the plain-English replacement>"}` entry; the gate silently ignores entries in any other shape, so a malformed append does nothing and tells no one. This is the loop that keeps the voice gate current; without it the list fossilizes while the jargon keeps evolving. No transcript tooling needed; you were there, read your own turns.
+Re-read your own session: every term you stopped to explain, every gloss you wrote, every word the human asked about. Append each to `scripts/phrase-list.json` as a `{"bad": "<the phrase>", "good": "<the plain-English replacement>"}` entry. Then run `node scripts/check-jargon.js` before moving on, for two reasons. A malformed append fails it loud (the blocking gate refuses a damaged list; the advisory voice-gate would just fall silent). And a new entry that already appears in the repo's prose fails it too: adjudicate NOW, rewrite that prose or drop the entry, so the growth loop never hands the next push a red check. This is the loop that keeps the voice gate current; without it the list fossilizes while the jargon keeps evolving. No transcript tooling needed; you were there, read your own turns.
 
 ## Step 4: Update the plan and the project's notes
 

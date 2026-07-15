@@ -8,6 +8,6 @@
   "scripts": {
     "shapes": "node scripts/generate-command-shapes.js",
     "test": "node --test",
-    "check": "node --test && node scripts/generate-command-shapes.js --confirm && node scripts/check-links.js"
+    "check": "node --test && node scripts/generate-command-shapes.js --confirm && node scripts/check-links.js && node scripts/check-jargon.js"
   }
 }
