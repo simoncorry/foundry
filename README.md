@@ -2,7 +2,7 @@
 
 Designers grew up with a process but in this age of AI they're being told to move beyond it in favor of tools that work faster. Foundry is here to bridge the gap between process and tool. An agent process that will feel strangely familiar: named stages that run in order and challenge the original problem statement from fresh angles.
 
-Foundry grew out of months of daily use building a real game, [Visiblemiles](https://visiblemiles.com), and it's the practical half of the blog series that starts with [How to Make Friends and Influence Agents](https://simoncorry.com/blog/2026/05/26/how-to-make-friends-and-influence-agents). The chain has grown a little since that post published.
+Foundry grew out of months of daily use building a real game, [Visiblemiles](https://visiblemiles.com), and it's the practical half of the blog series [Design Process, Meet Agent Process](https://simoncorry.com/blog/2026/07/15/design-process-meet-agent-process).
 
 Your coding tool (Cursor, Claude Code, Codex, whatever) is the harness: the thing that holds the agent, its permissions, and its tools. To be clear Foundry isn't that. Foundry is an agent process you run inside whichever harness you already use.
 
