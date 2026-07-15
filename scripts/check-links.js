@@ -41,8 +41,8 @@ import { fileURLToPath } from 'node:url';
 const root = process.env.CHECK_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // Slash commands owned by other tools. The README's comparison section
-// (planned content) names these on purpose; they are not Foundry
-// commands and never resolve. Anything else unresolvable still fails.
+// names these on purpose; they are not Foundry commands and never
+// resolve. Anything else unresolvable still fails.
 const EXTERNAL_COMMANDS = new Set(['/goal', '/init', '/compact', '/review', '/plan']);
 
 const PATH_PREFIXES = /^(docs|scripts|tests|\.cursor|\.claude|\.agents|\.github)\//;
