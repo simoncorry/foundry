@@ -34,7 +34,7 @@
 // not recognized; add them if a file starts using them.
 
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // CHECK_ROOT lets the tests point the checker at a fixture tree.
@@ -110,6 +110,14 @@ function anchorExists(relPath, anchor) {
   return [...headings].some((h) => slugify(h) === anchor.toLowerCase());
 }
 
+// Every reference must land INSIDE the repo. A token that climbs out
+// with .. can still exist on disk, but existing elsewhere is not
+// resolving here, and the checker's contract is "the repo tree".
+function insideRoot(absPath) {
+  const resolved = resolve(absPath);
+  return resolved === resolve(root) || resolved.startsWith(resolve(root) + sep);
+}
+
 // A repo-root-relative path token, possibly with placeholders or a glob.
 // Returns true when the concrete file/dir (or the static prefix before
 // the first placeholder) exists.
@@ -128,10 +136,10 @@ function pathResolves(token) {
   if (sawPlaceholder) {
     if (staticSegments.length === 0) return false;
     const prefix = join(root, ...staticSegments);
-    return existsSync(prefix) && statSync(prefix).isDirectory();
+    return insideRoot(prefix) && existsSync(prefix) && statSync(prefix).isDirectory();
   }
   const abs = join(root, ...staticSegments);
-  if (!existsSync(abs)) return false;
+  if (!insideRoot(abs) || !existsSync(abs)) return false;
   if (wantsDir) return statSync(abs).isDirectory();
   return true;
 }
@@ -205,8 +213,8 @@ function checkMarkdownLink(file, line, target) {
   }
   const [pathPart, anchor] = target.split('#');
   const resolved = join(dirname(file), pathPart);
-  if (!existsSync(join(root, resolved))) {
-    fail(file, line, `](${target})`, `target ${resolved} not found`);
+  if (!insideRoot(join(root, resolved)) || !existsSync(join(root, resolved))) {
+    fail(file, line, `](${target})`, `target ${resolved} not found in the repo`);
     return;
   }
   if (anchor && pathPart.endsWith('.md') && !anchorExists(resolved, anchor)) {

@@ -134,6 +134,17 @@ test('trailing sentence punctuation on a bare prose path is stripped', () => {
   assert.ok(!r.out.includes('docs/light.md'), 'existing path with trailing period must pass');
 });
 
+test('a reference that climbs out of the repo with .. fails even when the outside file exists', () => {
+  const root = makeFixture();
+  writeFileSync(join(root, '..', 'escapee.md'), 'outside\n');
+  writeFileSync(join(root, 'docs', 'page.md'), 'See `docs/../../escapee.md` and [link](../../escapee.md).\n');
+  const r = run(root);
+  rmSync(join(root, '..', 'escapee.md'), { force: true });
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('escapee.md'));
+});
+
 test('the real repo passes its own link check', () => {
   const r = run(repoRoot);
   assert.equal(r.code, 0, r.out);
