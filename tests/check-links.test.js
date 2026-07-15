@@ -162,6 +162,28 @@ test('a plain-prose section citation cannot escape the repo either', () => {
   assert.ok(r.out.includes(outName));
 });
 
+// Anchor resolution has no consumer in the tree yet (slice 6's README
+// will be the first), so it needs its own pin or it can rot silently
+// before then. Exercises slugify + anchorExists on both link shapes.
+test('markdown anchor links resolve against real headings and fail on ghosts', () => {
+  const root = makeFixture();
+  writeFileSync(join(root, 'docs', 'ok.md'), '# Page\n\n## A Section\n\nSee [x](../AGENTS.md#voice) and [self](#a-section).\n');
+  const good = run(root);
+  assert.equal(good.code, 0, good.out);
+
+  writeFileSync(join(root, 'docs', 'bad.md'), '# Page\n\nSee [x](../AGENTS.md#ghost-heading).\n');
+  const crossFile = run(root);
+  assert.equal(crossFile.code, 1);
+  assert.ok(crossFile.out.includes('ghost-heading'));
+
+  rmSync(join(root, 'docs', 'bad.md'), { force: true });
+  writeFileSync(join(root, 'docs', 'bad2.md'), '# Page\n\nSee [self](#no-such-anchor).\n');
+  const sameFile = run(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(sameFile.code, 1);
+  assert.ok(sameFile.out.includes('no-such-anchor'));
+});
+
 test('the real repo passes its own link check', () => {
   const r = run(repoRoot);
   assert.equal(r.code, 0, r.out);
