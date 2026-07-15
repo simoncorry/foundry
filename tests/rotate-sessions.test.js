@@ -142,6 +142,29 @@ test('rotation appends to an existing week file without losing its entries', () 
   assert.ok(archived.includes('First old') && archived.includes('Second old'));
 });
 
+test('the loss check refuses when an archive would swallow an appended entry', () => {
+  // An archive whose last entry carries an unclosed fence makes any
+  // appended entry disappear on re-parse (the open fence swallows its
+  // heading). The staged-write fingerprint comparison must catch that
+  // and refuse, or rotation silently loses the new entry.
+  const oldDate = isoDate(9);
+  const root = makeFixture(`${PREAMBLE}\n## ${oldDate}: New old entry\n\nBody.\n`);
+  mkdirSync(join(root, 'docs', 'sessions', 'history'), { recursive: true });
+  const [y, m, d] = oldDate.split('-').map(Number);
+  const archive = weekFileName(y, m, d);
+  writeFileSync(
+    join(root, 'docs', 'sessions', 'history', archive),
+    `# Sessions, ${archive.replace('.md', '')}\n\n## ${oldDate}: Archived with open fence\n\n\`\`\`\nnever closed\n`
+  );
+  const logBefore = readFileSync(join(root, 'docs', 'sessions', 'LOG.md'), 'utf8');
+  const r = run(root);
+  const logAfter = readFileSync(join(root, 'docs', 'sessions', 'LOG.md'), 'utf8');
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('LOSS CHECK FAILED'));
+  assert.equal(logAfter, logBefore, 'the log is untouched after a refused rotation');
+});
+
 test('parseLog splits entries and keeps preamble separate', () => {
   const { preamble, entries } = parseLog(`Title\n\n## 2026-07-15: A\n\nBody A.\n\n## 2026-07-14: B\n\nBody B.\n`);
   assert.equal(preamble.join('\n').trim(), 'Title');
