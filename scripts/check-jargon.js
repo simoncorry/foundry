@@ -23,10 +23,18 @@
 // scripts/ and tests/ JavaScript. String and template literals are
 // code, not prose: test fixtures quote listed phrases on purpose.
 //
-// Known limit, on purpose: the JavaScript scanner does not lex regex
-// literals, so a doubled slash inside one reads as a line comment.
-// Foundry's own scripts sidestep that by using string methods (for
-// example startsWith('http')) instead of URL regexes.
+// Known limits, on purpose: this is a best-effort comment scanner, not
+// a full JavaScript lexer. Two exotic constructs can fool it. First, a
+// regex literal is not recognized, so a doubled slash inside one reads
+// as a line comment and can trip on the rest of that line. Second, a
+// backtick inside a template expression (the ${...} part) ends
+// template-scanning early, so a comment later on the same physical line
+// can be missed. Both need contortions that never appear in real code,
+// both reset at the next newline, and Foundry's own scripts avoid them
+// (string methods over URL regexes; no backtick-in-expression tricks).
+// A style gate tolerates a best-effort lexer; a compiler would not. The
+// honest fix here is this note, not a nested-template state stack for a
+// construct nobody writes.
 //
 // Generated folders (.claude/, .agents/) are skipped: byte parity with
 // the source is already guarded, so scanning the source covers them.
