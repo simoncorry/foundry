@@ -230,8 +230,8 @@ function checkProse(file, line, text) {
   for (const m of matchAll(citation, text)) {
     const target = m[1];
     const heading = m[2].trim();
-    if (!existsSync(join(root, target))) {
-      fail(file, line, `${target} § ${heading}`, `file ${target} not found`);
+    if (!insideRoot(join(root, target)) || !existsSync(join(root, target))) {
+      fail(file, line, `${target} § ${heading}`, `file ${target} not found in the repo`);
       continue;
     }
     if (heading.length === 0) {

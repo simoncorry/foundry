@@ -145,6 +145,17 @@ test('a reference that climbs out of the repo with .. fails even when the outsid
   assert.ok(r.out.includes('escapee.md'));
 });
 
+test('a plain-prose section citation cannot escape the repo either', () => {
+  const root = makeFixture();
+  writeFileSync(join(root, '..', 'escapee-cite.md'), '# Out\n\n## Secret\n');
+  writeFileSync(join(root, 'docs', 'page.md'), 'Follow ../../escapee-cite.md § Secret here.\n');
+  const r = run(root);
+  rmSync(join(root, '..', 'escapee-cite.md'), { force: true });
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('escapee-cite.md'));
+});
+
 test('the real repo passes its own link check', () => {
   const r = run(repoRoot);
   assert.equal(r.code, 0, r.out);
