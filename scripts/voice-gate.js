@@ -39,9 +39,9 @@ function loadList() {
 }
 
 async function readStdin() {
-  let data = '';
-  for await (const chunk of process.stdin) data += chunk;
-  return data;
+  let draft = '';
+  for await (const chunk of process.stdin) draft += chunk;
+  return draft;
 }
 
 const draft = await readStdin();

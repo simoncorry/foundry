@@ -122,7 +122,7 @@ test('confirm mode fails when a shape is missing entirely', () => {
 
 test('the real repo tree is in sync (confirm against the actual shapes)', () => {
   // Read-only against the repo itself: proves the committed shapes match
-  // the committed sources, the same thing CI will assert at slice 5.
+  // the committed sources, the same thing CI asserts on every push.
   const confirm = run(repoRoot, ['--confirm']);
   assert.equal(confirm.code, 0);
   assert.ok(existsSync(join(repoRoot, '.agents', 'skills', 'wrap-up', 'SKILL.md')));

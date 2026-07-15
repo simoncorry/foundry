@@ -162,9 +162,9 @@ test('a plain-prose section citation cannot escape the repo either', () => {
   assert.ok(r.out.includes(outName));
 });
 
-// Anchor resolution has no consumer in the tree yet (slice 6's README
-// will be the first), so it needs its own pin or it can rot silently
-// before then. Exercises slugify + anchorExists on both link shapes.
+// Anchor resolution has no consumer in the tree (the README ended up
+// linking whole files, not headings), so it needs its own pin or it can
+// rot silently. Exercises slugify + anchorExists on both link shapes.
 test('markdown anchor links resolve against real headings and fail on ghosts', () => {
   const root = makeFixture();
   writeFileSync(join(root, 'docs', 'ok.md'), '# Page\n\n## A Section\n\nSee [x](../AGENTS.md#voice) and [self](#a-section).\n');
