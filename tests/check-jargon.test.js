@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -157,4 +157,45 @@ test('the phrase list itself is not scanned', () => {
 test('the real repo passes its own jargon gate', () => {
   const r = run(repoRoot);
   assert.equal(r.code, 0, r.out);
+});
+
+// The list is append-forever (wrap-up's growth step adds entries every
+// session), so its validity properties need a standing pin, not just the
+// one-time assertion that ran at the curation import.
+test('the shipped phrase list holds its validity properties', () => {
+  const list = JSON.parse(readFileSync(join(repoRoot, 'scripts', 'phrase-list.json'), 'utf8'));
+  assert.ok(Array.isArray(list) && list.length > 0);
+  const seen = new Set();
+  for (const entry of list) {
+    assert.deepEqual(Object.keys(entry).sort(), ['bad', 'good'], `entry shape: ${JSON.stringify(entry)}`);
+    assert.ok(entry.bad.trim().length > 0 && entry.good.trim().length > 0);
+    const key = entry.bad.toLowerCase();
+    assert.ok(!seen.has(key), `duplicate: ${entry.bad}`);
+    seen.add(key);
+  }
+  for (const a of list) {
+    for (const b of list) {
+      if (a !== b) {
+        assert.ok(
+          !a.bad.toLowerCase().includes(b.bad.toLowerCase()),
+          `shadow: "${a.bad}" contains "${b.bad}" and can never match first`
+        );
+      }
+      assert.ok(
+        !a.good.toLowerCase().includes(b.bad.toLowerCase()),
+        `rewrite for "${a.bad}" contains listed phrase "${b.bad}"`
+      );
+    }
+  }
+});
+
+// The growth loop's guard: wrap-up's jargon step must run this gate right
+// after appending, or a new entry matching existing prose reddens the next
+// push with nobody warned. The sentence lives in the command source; the
+// shapes confirm carries it to the generated copies.
+test('the wrap-up growth step invokes the gate after appending', () => {
+  const wrapUp = readFileSync(join(repoRoot, '.cursor', 'commands', 'wrap-up.md'), 'utf8');
+  const step3 = wrapUp.split(/^## /m).find((s) => s.startsWith('Step 3'));
+  assert.ok(step3, 'wrap-up.md must keep a Step 3 section');
+  assert.ok(step3.includes('node scripts/check-jargon.js'), 'Step 3 must run the blocking gate after appending');
 });
