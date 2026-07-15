@@ -74,5 +74,6 @@
   {"bad":"resumability","good":"picking up where you left off"},
   {"bad":"ghost-polling","good":"repeatedly checking for something that is gone"},
   {"bad":"isolation break","good":"data leaking between environments"},
-  {"bad":"wall-clock budget","good":"the actual elapsed-time limit"}
+  {"bad":"wall-clock budget","good":"the actual elapsed-time limit"},
+  {"bad":"\u2014","good":"use a period, comma, semicolon, or parentheses instead of an em dash"}
 ]

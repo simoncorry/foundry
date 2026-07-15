@@ -189,6 +189,15 @@ test('the shipped phrase list holds its validity properties', () => {
   }
 });
 
+// The repo's docs promise prose without em dashes, and the gate is the
+// only standing enforcement (a reviewer's eye doesn't survive handoffs).
+// Pin that the shipped list carries the character, so a future trim
+// can't quietly drop the guard.
+test('the shipped phrase list guards the em dash', () => {
+  const list = JSON.parse(readFileSync(join(repoRoot, 'scripts', 'phrase-list.json'), 'utf8'));
+  assert.ok(list.some((entry) => entry.bad === '\u2014'), 'phrase list must keep the em-dash entry');
+});
+
 // The growth loop's guard: wrap-up's jargon step must run this gate right
 // after appending, or a new entry matching existing prose reddens the next
 // push with nobody warned. The sentence lives in the command source; the
