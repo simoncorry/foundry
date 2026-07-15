@@ -21,9 +21,11 @@ Check the ground you're standing on and act on what you find:
 
 No-git projects: skip the git checks and just confirm which folder you're working in.
 
-## Step 2: Read the handoff note
+## Step 2: Read the handoff note and the log
 
-If the human's first message contains a handoff block (the output of last session's handoff command), that's your brief: read it, follow its agent half, and respect its "needs the human" and "out of scope" sections. If the project keeps standing context files (a session log, a current-state summary), read those too.
+If the human's first message contains a handoff block (the output of last session's handoff command), that's your brief: read it, follow its agent half, and respect its "needs the human" and "out of scope" sections.
+
+Then read `docs/sessions/LOG.md` if it exists; after rotation it holds exactly the current week, so read it whole. The log is the durable half of the bridge: when a handoff paste is missing or stale, the newest entry is where things actually stand. Glance at `docs/wiki/INDEX.md` too, and note which pages touch the session's likely work; construct-the-plan reads the relevant ones properly. If the project keeps other standing context files, read those as well.
 
 ## Step 3: Mirror the state
 

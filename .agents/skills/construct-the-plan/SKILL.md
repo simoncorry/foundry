@@ -15,7 +15,7 @@ The plan's narrative half prints for the human: follow AGENTS.md § Voice. Pipe 
 
 ## Step 1: Research before drafting
 
-Read enough to draft honestly: the files the work will touch, their callers and readers, the project's conventions for this area, and any prior notes or plans that cover the same ground. If your tool can spawn subagents, a few parallel read-only recon passes over different corners of the codebase are the cheap way to cover ground (optional; sequential reading works everywhere). The bar: you can name the files the work touches and explain how the change affects each of their neighbours. If you can't, keep reading.
+Read enough to draft honestly: the files the work will touch, their callers and readers, the project's conventions for this area, and any prior notes or plans that cover the same ground. Consult `docs/wiki/INDEX.md` and read the pages relevant to this work (the engineering pages for design shape, the design pages for interface work, the motion pages for animation); they exist so plans argue from named principles instead of vibes. If your tool can spawn subagents, a few parallel read-only recon passes over different corners of the codebase are the cheap way to cover ground (optional; sequential reading works everywhere). The bar: you can name the files the work touches and explain how the change affects each of their neighbours. If you can't, keep reading.
 
 ## Step 2: Write the plan file
 
