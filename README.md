@@ -64,12 +64,12 @@ Two ways in.
 
 Starting fresh? Clone this repo and build your project inside it. The commands are already wired: Cursor and Claude Code pick them up the moment you open the folder, and Codex reads each one as a skill you invoke by hand.
 
-Have a project already? Copy the three command folders (`.cursor/commands/`, `.claude/commands/`, `.agents/`) plus `AGENTS.md` and `CLAUDE.md` into it. That's the whole install. The commands are plain markdown and need nothing running on your machine; `scripts/` and the check are optional extras, and they're the only part that needs Node.
+Have a project already? Copy the three tool folders (`.cursor/commands/`, `.claude/commands/`, `.agents/`), the two rules files (`AGENTS.md`, `CLAUDE.md`), and `scripts/` into it. That's the whole install. The commands are plain markdown and need nothing running on your machine; `scripts/` rides along because the commands lean on its voice gate and phrase list, and Node is needed only at the moments you run those checks.
 
 If your tool is something else entirely, the floor still holds: every command is plain markdown, so paste the file's contents into the chat and it runs. Per-tool wiring detail lives in [the tool notes](docs/tool-notes.md), and the ground rules the agent works under are in `AGENTS.md`. The chain assumes an agent that can read and write files, run shell commands, and follow a multi-step instruction; git helps but isn't required (see AGENTS.md § What the chain assumes, which carries the no-git shape).
 
 ## If you edit anything
 
-`.cursor/commands/` is the source of truth. The Claude and Codex shapes are generated from it (`npm run shapes`), and `npm run check` fails if they've been edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push.
+`.cursor/commands/` is the source of truth. The Claude and Codex shapes are generated from it (`npm run shapes`), and `npm run check` fails if they've been edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push to main and on every pull request.
 
 MIT licensed.
