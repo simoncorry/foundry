@@ -1,7 +1,5 @@
 # Foundry
 
-> Not published yet. This repo is being assembled and hasn't had its voice pass or its final read. Nothing here is an invitation until it goes public.
-
 Foundry is an agent process for building software meant to last. Designers follow a design process: named stages, run in order, because the work comes out better than winging it. This is the same idea pointed at working with a coding agent.
 
 It grew out of months of daily use building a real game, and it's the practical half of the blog series that starts with [How to Make Friends and Influence Agents](https://simoncorry.com/blog/2026/05/26/how-to-make-friends-and-influence-agents). The chain has grown a little since that post published.
