@@ -1,52 +1,52 @@
 # Foundry
 
-Foundry is an agent process for building software meant to last. Designers follow a design process: named stages, run in order, because the work comes out better than winging it. This is the same idea pointed at working with a coding agent.
+Designers grew up with a process but in this age of AI they're being told to move beyond it in favor of tools that work faster. Foundry is here to bridge the gap between process and tool. An agent process that will feel strangely familiar, run named stages in a sequentioal order and challenge the original problem statement from unique angles.
 
-It grew out of months of daily use building a real game, and it's the practical half of the blog series that starts with [How to Make Friends and Influence Agents](https://simoncorry.com/blog/2026/05/26/how-to-make-friends-and-influence-agents). The chain has grown a little since that post published.
+Foundry grew out of months of daily use building a real game @visiblemiles, and it's the practical half of the blog series that starts with [How to Make Friends and Influence Agents](https://simoncorry.com/blog/2026/05/26/how-to-make-friends-and-influence-agents). The chain has grown a little since that post published.
 
-One word before the tour, because this space loves its words. Your coding tool (Cursor, Claude Code, Codex) is the harness: the thing that holds the agent, its permissions, and its tools. Foundry isn't one. Foundry is an agent process you run inside whichever harness you already use.
+Your coding tool (Cursor, Claude Code, Codex, whatever) is the harness: the thing that holds the agent, its permissions, and its tools. To be clear Foundry isn't that. Foundry is an agent process you run inside whichever harness you already use.
 
 ## The chain
 
-Ten stages plus one rider, each a plain markdown command the agent reads. Nineteen command files in total, because two of the stages run as five rounds each.
+Ten stages plus one optional rider, each a plain markdown command the agent reads. Nineteen command files in total, because two of the stages run as five rounds each.
 
 **Start up** reads the ground before any work: the branch, the working tree, the note the last session left behind. In design terms, re-reading the brief before the kickoff.
 
-**Construct the plan** writes the plan as a file in your repo, split in two: a narrative half for the human, a working-memory half for the agent. Nothing gets built from chat scrollback.
+**Construct the plan** writes the plan as a file in your repo, split in two: a narrative half for you (the human) and a working-memory half for the agent. Nothing gets built from chat scrollback.
 
-**Frame it** is the one stage where the agent interviews you: a short brief on the territory first, then three to five questions, ordered by how much of the plan each answer would change. In design terms, the client interview.
+**Frame it** is the one stage where the agent interviews you: a short brief on the planned work first, then three to five questions, ordered by how much of the plan each answer would change. In design terms, the client interview.
 
-**Challenge the plan** runs five review rounds before any code exists, each from a genuinely different angle, and the fifth re-reads everything the earlier rounds parked as uncertain. In design terms, the crit: fresh eyes, a declared focus, findings that get fixed rather than admired.
+**Challenge the plan** runs five review rounds before any code exists, each from a genuinely different angle, and the fifth re-reads everything the earlier rounds punted. In design terms, the crit: fresh eyes, a new focus, bringing it back to the original problem statement. Those findings get fixed in the plan before moving on.
 
-**Build it** settles the plan and implements it. When the code forces a departure from the plan, the agent takes the conservative option and logs it in the plan file instead of stopping to ask. The prototype stage.
+**Build it** settles the plan and implements it. When the code forces a departure from the plan, the agent takes an explortory stance instead of stopping to ask. This is important because you don't want the build to stall everytime there's a small deviation (you wouldn't hover over a designer and ask them to stop everytime they pushed a pixel). This is the prototype stage.
 
-**Test it** writes tests against what the plan intended, not what the code happens to do, then drives them to green. Designers already know this discipline: judge the work against the goal, not your fondness for what you made.
+**Test it** writes tests against what the plan intended, not what the code happens to do. Designers already know this discipline: judge the work against the goal, not your bias.
 
 **Security scan** is the optional stage for work that touches anything sensitive: an expert pass against a named checklist of threat classes, with every candidate finding forced to argue against itself before it's reported. In design terms, heuristic evaluation.
 
 **Challenge the implementation** is five more rounds, now against the code, same angle rotation. The plan crit was about direction; this is the review that drives the work to shippable.
 
-**Wrap up** cleans the workspace, grows the jargon list, updates the project's notes, and opens the one pull request. It's the state you leave your desk in.
+**Wrap up** cleans the workspace, grows the jargon list (a way to train your agent to stop talking gibberish), updates the project's notes, and opens the one pull request. It's the state you leave your desk in.
 
-**Hand off** writes a short note for the next session: what's in flight, what's next, what would be hard to reconstruct cold. Handoff keeps its design name because that's exactly what it is.
+**Hand off** writes a short note for the next session: what's in flight, what's next, what would be hard to reconstruct cold. This is how you keep building a longer form project with confidence. Handoff keeps its OG design process name because that's exactly what it is.
 
-**Quiz** is the rider, opt-in at any point: it quizzes you on a change that just shipped and teaches through the grading, so you actually understand what you merged.
+**Quiz** is the rider, opt-in at any point: it quizzes you on a change that just shipped and teaches through the grading, so you actually understand what you merged. This will keep you honest so you learn as you build. If you don't have an engineering background I HIGHLY recommend you do this after every session.
 
 ## The design process, mirrored
 
-The Double Diamond (British Design Council, 2005) splits work into understanding the problem and building the thing right. The chain's first half (start up, construct the plan, frame it, the plan challenges) is the first diamond; build it through hand off is the second. The d.school's five stages map too: Define is the plan, Prototype is build it, Test is test it.
+The Double Diamond (British Design Council, 2005) splits work into understanding the problem and building the thing right. The chain's first half (start up, construct the plan, frame it, the plan challenges) is the first diamond. The chain's second half (Build it, test it, security scan, the implementation challenges, wrap up and hand off) represent the second diamond.
 
-The crit is the cultural bridge. The challenge rounds are structured critique with the classic rules built in: fresh eyes, because the maker can't see their own blind spots; a declared focus, which is the angle each round states up front; critique that proposes, so rounds fix what they find; and documented outcomes, the count lines every round ends with.
+The crit is the cultural bridge and it forces some of our humanity back into an otherwise seemingly blackhole of logic. The challenge rounds are structured critique with the classic rules built in: fresh eyes, because the agent can't see its own blind spots; a declared focus, which is the angle each round states up front; critique that proposes, so rounds fix what they find; and documented outcomes.
 
-Two places the mirror bends. The chain has no end-user research stage; that seat stays open for your own skills, and taste routes to you through frame it. And where design diverges by generating alternatives, the chain diverges by generating criticisms of one candidate.
+Two places you'll want to stay present. Frame it asks you directly for input, this is where your taste matters. The chain has no end-user research stage. That (to me) is still a deeply human step. In my game Visiblemiles I built a simulated player rig so you can take that route for battletesting basic UX fragility but otherwise always speak to your customers/clients for direct feedback.
 
 ## How this differs from the built-in commands
 
 The tools already ship commands that look like they cover this ground. Claude Code and Codex both have `/goal` now: you hand the agent a finish line and it loops, turn after turn, until a separate check decides the condition is met or the budget runs out. There's `/init` to write a project memory file, `/compact` to shrink the chat history, `/review` to look over a diff, `/plan` to think before coding. They're good. `/goal` especially is genuinely impressive at what it does.
 
-But look at what it's for: getting a machine to "done" with you out of the room. It optimizes for finishing, not for being right, and not for you understanding what happened along the way. The reasoning is a black box, you can't shape it as it runs, and when the terminal closes most of it evaporates. That's a fair trade for a weekend prototype. It's the wrong trade for something you mean to keep.
+But look at what it's for: getting a machine to "done" with you out of the room. It optimizes for finishing, not for being right, and not for you understanding what happened along the way. The reasoning is a black box, you can't shape it as it runs, and when the terminal closes most of the context is lost. That's a fair trade for a weekend prototype. It's the wrong trade for something you mean to keep.
 
-Foundry's bet is the opposite. Every stage is a checkpoint with a name and a job, and you're in the loop at the seams: you approve the plan, frame it has the agent brief you and ask before anything gets built (the built-ins only ever take questions, they don't ask them), the challenge rounds tell you what they found, the wrap up explains in plain English what changed. And the chain leaves a trail: the rules file, the plan, the session notes, the handoff note. That trail is the part that lasts, the thing that lets the next session, or the next person, pick up the soul of the project and not just its code.
+Foundry's bet is the opposite. Every stage is a checkpoint with a name and a job, and you're in the loop where your expertese matters: you approve the plan, frame it has the agent brief you and ask before anything gets built, the challenge rounds tell you what they found, the wrap up explains in plain English what changed. And the chain leaves a trail: the rules file, the plan, the session notes, the handoff note. That trail is the part that lasts, the thing that lets the next session, or the next person, pick up the soul of the project and not just its code.
 
 So this isn't "mine beats theirs." If the work is throwaway, reach for `/goal`. It's faster and I mean that. Foundry earns its weight on projects meant to live on, where the working relationship between you and the agent is a real asset. One honest caveat: these platforms already let you write custom commands, so Foundry isn't a trick they can't do. It's a considered set of them that I use every day, plus the habits and the memory around them, so nobody has to repeat the months of trial and error it took to get here.
 
