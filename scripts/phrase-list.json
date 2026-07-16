@@ -75,5 +75,19 @@
   {"bad":"ghost-polling","good":"repeatedly checking for something that is gone"},
   {"bad":"isolation break","good":"data leaking between environments"},
   {"bad":"wall-clock budget","good":"the actual elapsed-time limit"},
-  {"bad":"\u2014","good":"use a period, comma, semicolon, or parentheses instead of an em dash"}
+  {"bad":"\u2014","good":"use a period, comma, semicolon, or parentheses instead of an em dash"},
+  {"bad":"polling loop","good":"checking repeatedly until something is ready"},
+  {"bad":"state explosion","good":"too many separate states to manage"},
+  {"bad":"confabulated citations","good":"false or invented source references"},
+  {"bad":"prompt-injection surface","good":"places where untrusted input could break the prompt structure"},
+  {"bad":"token-budget implications","good":"how much extra AI processing cost this adds"},
+  {"bad":"pub/sub system","good":"a system where parts announce events and others listen for them"},
+  {"bad":"synchronous semantics","good":"immediate execution without waiting"},
+  {"bad":"atomic write mechanism","good":"writing a file in a way that prevents corruption if the process crashes"},
+  {"bad":"heredoc strings","good":"multiline text blocks embedded directly in a script"},
+  {"bad":"multi-subscriber fan-out","good":"sending one message to multiple listeners"},
+  {"bad":"cascading gate","good":"a series of checks where each must pass before the next"},
+  {"bad":"structural protection by construction","good":"making something impossible to break by the way the code is written"},
+  {"bad":"glob auto-discovery","good":"automatically finding files by pattern instead of a hardcoded list"},
+  {"bad":"async dispatch or buffering","good":"delayed or queued message delivery"}
 ]
