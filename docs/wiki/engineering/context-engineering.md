@@ -21,3 +21,18 @@ Models update on someone else's schedule, and a harness tuned to one generation'
 ## The edge test for parallel work
 
 Before running two pieces of agent work at the same time, ask whether one's output feeds the other's input. No data crossing means no dependency: run them at once. Data crossing means a real edge: the later step waits. Most sequential chains contain steps that were only typed in order, not dependent in fact, and most parallel ambitions break on edges that turn out to be real (a review round that consumes the previous round's fixes is a real edge, however tempting the speedup). One verification pattern is recorded here for when the evidence arrives: if a single skeptical reviewer provably misses a class of problem, several reviewers with genuinely different lenses (correctness, security, reproduction) catch what identical duplicates never will. Adopt that on evidence of a real miss, not ahead of it. (Codez, "Graph Engineering with Claude," July 2026: https://x.com/0xcodez/status/2079165300625330317. The plan-shape counterparts, program design and vertical slices, are credited in construct-the-plan's rationale to Dex Horthy: https://x.com/dexhorthy/status/2081058573556306030)
+
+## Sources
+
+- **Thariq Shihipar, "The new rules of context engineering for Claude 5 models" (July 2026)**
+  - Primary: https://x.com/trq212/status/2080710971228918066
+  - Wayback snapshot: https://web.archive.org/web/20260724180116/https://x.com/trq212/status/2080710971228918066
+- **Winter, "Why Harness Engineering Is So Hard" (July 2026)**
+  - Primary: https://x.com/winterarc2125/status/2081042507471696318
+  - Wayback snapshot: not currently archived (X posts are captured inconsistently); the author, title, and date are the durable citation.
+- **Codez, "Graph Engineering with Claude" (July 2026)**
+  - Primary: https://x.com/0xcodez/status/2079165300625330317
+  - Wayback snapshot: not currently archived (X posts are captured inconsistently); the author, title, and date are the durable citation.
+- **Dex Horthy, "Why Software Factories Fail: Turning the lights back on" (July 2026)**
+  - Primary: https://x.com/dexhorthy/status/2081058573556306030
+  - Wayback snapshot: not currently archived (X posts are captured inconsistently); the author, title, and date are the durable citation.
