@@ -49,7 +49,7 @@ Rounds 6 and beyond alternate: an angle-rotated round (rounds 1-4 template, NEW 
 - Two consecutive rounds finding nothing, with genuinely different angles. The curve has tapped out.
 - Reaching round 8. Auto-stop with a one-line note naming the last angle used. Past 8 rounds the angle list is two-thirds spent; the human can always invoke another round manually.
 
-Every extra round must declare a NEW angle not used in any prior round; reaching for a used one is itself the stop signal.
+Every extra round must declare a NEW angle not used in any prior round; reaching for a used one is itself the stop signal. Keep a ledger of every finding any round surfaced, including the rejected ones, and dedupe each extra round's fresh findings against everything SEEN, not just what was confirmed or fixed; otherwise a rejected finding resurfaces and the chain never runs dry.
 
 **Closing declaration when stopping:** name the angles. "I've used angles A, B, C, D, E and can't find a sixth that isn't a re-skin of one of those. Confidence in the plan is earned after five rounds of genuine rotation." A confidence claim with no angle citation is the lazy kind; don't write it.
 
@@ -59,4 +59,4 @@ Same checklist as round 1: line cap, no sub-categorized headers, no count-justif
 
 ## Rationale (recorded so future edits don't drift it)
 
-Demotions are cheap to write and expensive to leave wrong: a claim parked as "uncertain" in round 1 quietly weakens the plan even when the original position was right. This round exists so every demotion gets a second, evidence-based look before the build starts, and so the chain can extend itself honestly when the bug curve hasn't tapered instead of stopping at an arbitrary round count.
+Demotions are cheap to write and expensive to leave wrong: a claim parked as "uncertain" in round 1 quietly weakens the plan even when the original position was right. This round exists so every demotion gets a second, evidence-based look before the build starts, and so the chain can extend itself honestly when the bug curve hasn't tapered instead of stopping at an arbitrary round count. The seen-vs-confirmed dedupe adapts the loop-until-dry rule from Codez's graph-engineering writing (July 2026): dedupe against everything seen, or the loop pays to rediscover its own dead ends.
