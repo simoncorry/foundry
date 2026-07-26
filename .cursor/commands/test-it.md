@@ -45,6 +45,10 @@ Three cases when a test is red:
 
 Two fix-and-rerun tries is the cap before halting (Step 5).
 
+When the suite reaches green, run it once more before trusting it: a pass that doesn't reproduce is a red (flaky tests are how broken work slips through), and it routes through the same three cases above.
+
+A fourth case sits outside the code entirely: when an outside service fails mid-stage (an API down, a platform change), that is the world breaking, not the work. Log it, name it in the report's Deferred field, and never "fix" working code in response.
+
 ## Step 4: Independent grader (optional; needs a tool that can spawn a second agent)
 
 The builder never grades its own work: models evaluating their own output systematically score it higher, and the effect traces to recognizing their own generations (Panickssery, Bowman and Feng, "LLM Evaluators Recognize and Favor Their Own Generations", NeurIPS 2024). When the plan states a falsifiable bar AND there's real output to inspect, spawn ONE fresh-context, read-only subagent. Give it only the bar (quoted from the plan), the changed-file list, and how to inspect the output. Not the rationale, not the chat history; the empty memory is the point. Instruct it to attempt disproof: "Try to prove this change does NOT meet the bar. Report the strongest failure you can produce, or state that you could not produce one."
@@ -71,4 +75,4 @@ K counts real defects the tests revealed, fixed by changing the code. Report the
 
 ## Rationale (recorded so future edits don't drift it)
 
-The stage exists because review rounds judging untested code argue about reasoning, while rounds judging tested code argue about evidence. The never-weaken rule and the plan-derived expectations both counter the same failure: an agent grading its own homework drifts toward whatever the code already does. The grader step brings in the one reviewer that can't recognize its own work, and the cited NeurIPS 2024 result is why that seat matters.
+The stage exists because review rounds judging untested code argue about reasoning, while rounds judging tested code argue about evidence. The never-weaken rule and the plan-derived expectations both counter the same failure: an agent grading its own homework drifts toward whatever the code already does. The grader step brings in the one reviewer that can't recognize its own work, and the cited NeurIPS 2024 result is why that seat matters. The run-it-twice rule and the outside-service case adapt the acceptance-testing discipline in Mike Fishbein's infinite-headcount factory skills (flaky greens hide broken builds; a failure of the world is never a reason to edit working code). Recorded so the lineage survives edits.

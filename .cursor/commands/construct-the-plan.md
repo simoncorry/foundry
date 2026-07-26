@@ -28,6 +28,11 @@ Two halves, split by a horizontal rule:
 
 **The working-memory half (for the agent).** Inputs (the files and docs the plan derives from), build steps in order, and acceptance bars concrete enough that a stranger could check them (test-it and the grader read these). Precise and specific; bullets don't need to read like prose, but they can't be jargon-stacked either.
 
+Two shape disciplines for the working-memory half:
+
+- **Sketch the program design when the work changes control flow or layout.** A call-stack tree of the new or changed flow (diff syntax when modifying an existing one), a file-tree diff when files move or appear, and the key new function signatures. Each sketch is a decision a reviewer would otherwise make implicitly during code review, the most expensive moment to change it. Skip the sketches when the work changes neither flow nor layout; they earn their lines, never fill them.
+- **Order the build steps as vertical slices when the work allows.** The first step is the thinnest end-to-end slice that runs; every later step ends at a state you can run or touch. Layer-by-layer ordering (all data, then all logic, then all interface) is the fallback, and the plan states when and why it applies.
+
 Include an empty `## Deviations` section at the bottom; build-it logs departures from the plan there as it hits them.
 
 ## Step 3: State the one-call summary
@@ -44,4 +49,4 @@ Then STOP. Frame-it runs next if open questions remain (the human invokes it); t
 
 ## Rationale (recorded so future edits don't drift it)
 
-The chain's first step went unwritten for months: drafting lived in one tool's plan mode and in habit, which meant it silently didn't exist anywhere else and its quality depended on mood. Writing the plan to a real file does three jobs at once: it works in every tool, it gives the challenge rounds something concrete to edit (their findings land as plan edits, not chat opinions), and it leaves a trail the next session can pick up. The two-half split exists because the plan serves two readers with different needs, and mixing them serves neither; the narrative half's ordering rule (taste first, mechanics last) puts the human's first minute of reading on the decisions that are actually theirs.
+The chain's first step went unwritten for months: drafting lived in one tool's plan mode and in habit, which meant it silently didn't exist anywhere else and its quality depended on mood. Writing the plan to a real file does three jobs at once: it works in every tool, it gives the challenge rounds something concrete to edit (their findings land as plan edits, not chat opinions), and it leaves a trail the next session can pick up. The two-half split exists because the plan serves two readers with different needs, and mixing them serves neither; the narrative half's ordering rule (taste first, mechanics last) puts the human's first minute of reading on the decisions that are actually theirs. The program-design sketches and the slice ordering adapt Dex Horthy's software-factory writing (program design as the underemphasized stage between architecture and code; vertical slices so there is always something runnable to touch) and Dillon Mulroy's call-graph planning habit. Recorded so the lineage survives edits.

@@ -12,6 +12,7 @@ Ideas about building software that have aged well across fifty years, for design
 - [Essential vs accidental complexity](engineering/essential-vs-accidental.md): is this complexity in the problem, or in my approach? Reach for it when a design feels heavier than the problem.
 - [Hide what's likely to change](engineering/information-hiding.md): how to split code into modules, and the wrong-abstraction trap. Reach for it before extracting shared code or designing an interface.
 - [Theory and documentation](engineering/theory-and-documentation.md): why the code alone can't carry a project's reasoning, and what to write down instead. Reach for it when deciding what a plan or record should say.
+- [Context engineering](engineering/context-engineering.md): keeping what the agent reads lean, honest, and re-tunable. Reach for it when a rules file grows, the model generation changes, or the process feels heavier than the work it governs.
 
 ## Design fundamentals
 
