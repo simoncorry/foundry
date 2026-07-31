@@ -12,13 +12,15 @@
 //     punctuation (the em dash entry, for example) matches as a plain
 //     substring, because its neighbours are legitimately letters.
 //   - Markdown code is not prose. Fenced blocks and inline `code` spans
-//     are skipped. One exception: a document wrapped WHOLE in a single
-//     outer ```markdown (or ```md) fence is a copy wrapper, not a code
-//     sample, so its contents are unwrapped and scanned normally
-//     (handoff blocks travel this way). Fences inside the unwrapped body
-//     count as real code again.
-//   - Every hit reports its 1-based line number in the ORIGINAL text,
-//     so a hit inside an unwrapped handoff still points at the real line.
+//     are skipped. One exception: a ```markdown (or ```md) fence is a
+//     copy wrapper, not a code sample, so its contents are scanned as
+//     prose wherever the fence appears (a handoff block travels this way,
+//     usually behind a lead-in sentence). Fences INSIDE a wrapper count
+//     as real code again; nesting is by fence length, the CommonMark
+//     rule, so a wrapper must use more backticks than any inner fence
+//     (handoffs use four). To skip a genuine markdown SAMPLE, fence it as
+//     plain code (bare ``` or a non-markdown language), not ```markdown.
+//   - Every hit reports its 1-based line number in the ORIGINAL text.
 //
 // List loading is strict and throws: an unreadable file, a non-array
 // root, or a malformed entry raises an Error naming the problem. Each
@@ -94,55 +96,41 @@ export function compilePhrases(list) {
 // ─── markdown region extraction ──────────────────────────────────────────
 
 const FENCE_LINE = /^\s*(`{3,}|~{3,})(.*)$/;
-const OUTER_OPEN = /^(`{3,}|~{3,})\s*(markdown|md)\s*$/i;
-const OUTER_CLOSE = /^(`{3,}|~{3,})\s*$/;
-
-// A whole-document ```markdown wrapper is a copy wrapper, not code.
-// Detection is deliberately narrow: the FIRST non-empty line opens the
-// fence with a markdown/md info string, and the LAST non-empty line
-// closes it with the same character and at least the same run length.
-// Anything less exact stays a normal code fence.
-export function unwrapOuterMarkdownFence(text) {
-  const lines = text.split('\n');
-  let first = 0;
-  while (first < lines.length && lines[first].trim() === '') first += 1;
-  let last = lines.length - 1;
-  while (last >= 0 && lines[last].trim() === '') last -= 1;
-  if (first >= last) return { lines, offset: 0, unwrapped: false };
-  const open = lines[first].trim().match(OUTER_OPEN);
-  const close = lines[last].trim().match(OUTER_CLOSE);
-  if (
-    open && close
-    && close[1][0] === open[1][0]
-    && close[1].length >= open[1].length
-  ) {
-    return { lines: lines.slice(first + 1, last), offset: first + 1, unwrapped: true };
-  }
-  return { lines, offset: 0, unwrapped: false };
-}
+const WRAPPER_INFO = /^(markdown|md)$/i;
 
 // Returns [{ line, text }] for prose lines only, with inline code spans
 // blanked (spaces preserve column positions). `line` is 1-based against
-// the original text, including any unwrapped outer fence.
+// the original text.
+//
+// One pass with a fence stack, following CommonMark's length nesting. A
+// fenced block opened with a markdown/md info string is a "wrapper"
+// (scan its contents as prose); any other info string, or none, is
+// "code" (skip its contents). A block closes on a bare fence line of the
+// same character and at least the opener's run length. Inside a code
+// block only a close counts; a fence line inside a wrapper opens a
+// nested block. So a wrapper's prose is scanned wherever the wrapper
+// sits, and a real code fence inside it is still skipped.
 export function extractProseLines(text) {
-  const { lines, offset } = unwrapOuterMarkdownFence(text);
   const out = [];
-  let fence = null;
-  lines.forEach((raw, i) => {
+  const stack = [];
+  text.split('\n').forEach((raw, i) => {
     const m = raw.match(FENCE_LINE);
     if (m) {
-      if (!fence) {
-        fence = { char: m[1][0], len: m[1].length };
-      } else if (m[1][0] === fence.char && m[1].length >= fence.len && m[2].trim() === '') {
-        fence = null;
+      const run = m[1];
+      const info = m[2].trim();
+      const top = stack[stack.length - 1];
+      if (top && info === '' && run[0] === top.char && run.length >= top.len) {
+        stack.pop();
+        return;
       }
+      if (top && top.kind === 'code') return; // fence-shaped code content
+      stack.push({ char: run[0], len: run.length, kind: WRAPPER_INFO.test(info) ? 'wrapper' : 'code' });
       return;
     }
-    if (fence) return;
-    out.push({
-      line: offset + i + 1,
-      text: raw.replace(/`[^`]*`/g, (s) => ' '.repeat(s.length)),
-    });
+    const top = stack[stack.length - 1];
+    if (!top || top.kind === 'wrapper') {
+      out.push({ line: i + 1, text: raw.replace(/`[^`]*`/g, (s) => ' '.repeat(s.length)) });
+    }
   });
   return out;
 }
