@@ -41,3 +41,23 @@ test('empty stdin reports itself instead of passing', () => {
   const out = run('   ');
   assert.ok(out.includes('no draft provided'));
 });
+
+test('hits report their line number', () => {
+  const out = run('clean line\nwe leverage the cache\n');
+  assert.ok(out.includes('line 2:'));
+});
+
+test('the listed phrase inside a larger word does not match', () => {
+  const out = run('The releverage theory holds.');
+  assert.ok(out.includes('OK, no listed phrases found'));
+});
+
+test('code blocks in a draft are not flagged', () => {
+  const out = run('Prose.\n\n```\nleverage the cache here\n```\n');
+  assert.ok(out.includes('OK, no listed phrases found'));
+});
+
+test('a whole-draft markdown copy wrapper is still scanned', () => {
+  const out = run('```markdown\nWe leverage the cache.\n```\n');
+  assert.ok(out.includes('"leverage the" -> try: "use the"'));
+});
