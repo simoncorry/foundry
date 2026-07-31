@@ -143,6 +143,26 @@ test('a malformed entry fails loud and names the entry', () => {
   assert.ok(r.out.includes('half an entry'));
 });
 
+test('the listed phrase inside a larger word does not fail the gate', () => {
+  const root = makeFixture();
+  writeFileSync(join(root, 'docs', 'page.md'), 'The mezorbly fluxative case is fine.\n');
+  const r = run(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 0);
+});
+
+test('a whole-document markdown copy wrapper is scanned as prose', () => {
+  const root = makeFixture();
+  writeFileSync(
+    join(root, 'docs', 'handoff.md'),
+    '```markdown\nHandoff prose with zorbly flux.\n```\n'
+  );
+  const r = run(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('docs/handoff.md:2'));
+});
+
 test('the phrase list itself is not scanned', () => {
   // The fixture list contains its own bad phrases by definition; a clean
   // tree passing (the first test) already proves this, but pin it against

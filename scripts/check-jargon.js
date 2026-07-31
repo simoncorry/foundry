@@ -22,6 +22,10 @@
 // command source folder; plus comment text (line and block) in
 // scripts/ and tests/ JavaScript. String and template literals are
 // code, not prose: test fixtures quote listed phrases on purpose.
+// One markdown exception: a document wrapped whole in a single outer
+// ```markdown fence is a copy wrapper (handoff blocks travel this way),
+// so its contents are unwrapped and scanned as prose. The mechanics live
+// in scripts/prose-matcher.js, shared with the advisory voice gate.
 //
 // Known limits, on purpose: this is a best-effort comment scanner, not
 // a full JavaScript lexer. Two exotic constructs can fool it. First, a
@@ -44,44 +48,28 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadPhraseList, compilePhrases, scanProse, matchLine } from './prose-matcher.js';
 
 // CHECK_ROOT lets the tests point the gate at a fixture tree.
 const root = process.env.CHECK_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..');
 
-function loadListStrict() {
-  const listPath = join(root, 'scripts', 'phrase-list.json');
-  let parsed;
-  try {
-    parsed = JSON.parse(readFileSync(listPath, 'utf8'));
-  } catch (err) {
-    console.error(`[jargon] BROKEN LIST: scripts/phrase-list.json is unreadable or not valid JSON (${err.message}). The gate refuses to pass with a damaged config.`);
-    process.exit(1);
-  }
-  if (!Array.isArray(parsed)) {
-    console.error('[jargon] BROKEN LIST: scripts/phrase-list.json must be a flat array of {"bad", "good"} entries.');
-    process.exit(1);
-  }
-  const malformed = parsed.filter(
-    (e) => !e || typeof e !== 'object' || typeof e.bad !== 'string' || typeof e.good !== 'string'
-      || e.bad.trim() === '' || e.good.trim() === '' || Object.keys(e).length !== 2
-  );
-  if (malformed.length > 0) {
-    console.error(`[jargon] BROKEN LIST: ${malformed.length} entr(y/ies) not shaped {"bad": string, "good": string}:`);
-    for (const e of malformed) console.error(`  ${JSON.stringify(e)}`);
-    process.exit(1);
-  }
-  return parsed;
+// Matching semantics live in scripts/prose-matcher.js, shared with the
+// advisory voice gate. This gate's posture: a broken list fails LOUD
+// (exit 1) because a blocking gate degrading to silence would disable
+// enforcement with nobody told.
+let compiled;
+try {
+  compiled = compilePhrases(loadPhraseList(join(root, 'scripts', 'phrase-list.json')));
+} catch (err) {
+  console.error(`[jargon] BROKEN LIST: scripts/phrase-list.json — ${err.message} The gate refuses to pass with a damaged config.`);
+  process.exit(1);
 }
 
-const list = loadListStrict();
 const hits = [];
 
 function scanText(file, line, text) {
-  const lower = text.toLowerCase();
-  for (const { bad, good } of list) {
-    if (lower.includes(bad.toLowerCase())) {
-      hits.push(`${file}:${line}: "${bad}" -> try: "${good}"`);
-    }
+  for (const { bad, good } of matchLine(text, compiled)) {
+    hits.push(`${file}:${line}: "${bad}" -> try: "${good}"`);
   }
 }
 
@@ -115,19 +103,15 @@ function listJsFiles() {
   return files;
 }
 
-// Markdown: prose is what's outside fenced blocks and inline spans.
+// Markdown: prose is what's outside fenced blocks and inline spans; a
+// whole-document ```markdown copy wrapper (a handoff block) is unwrapped
+// and its contents scanned as prose. Both rules live in the shared
+// matcher so the advisory gate agrees.
 function scanMarkdown(file) {
   const content = readFileSync(join(root, file), 'utf8');
-  let inFence = false;
-  content.split('\n').forEach((text, idx) => {
-    if (/^\s*(```|~~~)/.test(text)) {
-      inFence = !inFence;
-      return;
-    }
-    if (inFence) return;
-    const prose = text.replace(/`[^`]*`/g, ' ');
-    scanText(file, idx + 1, prose);
-  });
+  for (const { line, bad, good } of scanProse(content, compiled)) {
+    hits.push(`${file}:${line}: "${bad}" -> try: "${good}"`);
+  }
 }
 
 // JavaScript: comment text only. States: code, line comment, block
@@ -196,4 +180,4 @@ if (hits.length > 0) {
   console.error(`[jargon] ${hits.length} listed phrase(s) in committed prose. Rewrite the prose; never widen an exclusion to dodge the gate.`);
   process.exit(1);
 }
-console.log(`[jargon] OK: no listed phrases in committed prose (${list.length} phrases checked).`);
+console.log(`[jargon] OK: no listed phrases in committed prose (${compiled.length} phrases checked).`);
