@@ -8,7 +8,6 @@ import {
   assertValidPhraseList,
   loadPhraseList,
   compilePhrases,
-  unwrapOuterMarkdownFence,
   extractProseLines,
   matchLine,
   scanProse,
@@ -82,38 +81,43 @@ test('a longer closing run still closes the fence', () => {
   assert.deepEqual(hits.map((h) => h.line), [4]);
 });
 
-// ─── the outer markdown copy wrapper ─────────────────────────────────────
+// ─── the markdown copy wrapper (scanned wherever it appears) ──────────────
 
-test('a whole-document markdown fence is unwrapped and scanned', () => {
+test('a whole-document markdown fence is scanned as prose', () => {
   const text = '```markdown\nHandoff prose with zorbly flux.\n```\n';
   const hits = scanProse(text, PHRASES);
   assert.equal(hits.length, 1);
-  // Line 2 in the ORIGINAL document, inside the wrapper.
   assert.equal(hits[0].line, 2);
 });
 
-test('fences inside the unwrapped wrapper are code again', () => {
-  const text = '```markdown\nprose line\n```\nzorbly flux in inner code\n```\nprose zorbly flux\n```\n';
+test('a markdown wrapper behind a lead-in sentence is still scanned (the handoff shape)', () => {
+  // The realistic handoff: a sentence, then the copy block. This is the
+  // grader-caught bug the session-745 R4 disproof surfaced.
+  const text = 'Here is your handoff, copy it:\n\n```markdown\nWe hit zorbly flux in the backlog.\n```\n';
   const hits = scanProse(text, PHRASES);
-  assert.deepEqual(hits.map((h) => h.line), [6]);
+  // Line 1 is prose but carries no listed phrase; the hit is the wrapper's line 4.
+  assert.deepEqual(hits.map((h) => h.line), [4]);
 });
 
-test('a markdown fence that is not the whole document stays code', () => {
-  const text = 'intro prose\n```markdown\nzorbly flux quoted as a sample\n```\n';
+test('a real code fence inside a wrapper is skipped; wrapper prose around it is scanned', () => {
+  // Four-backtick wrapper (the shape /handoff emits) so the inner
+  // three-backtick code fence nests by length.
+  const text = '````markdown\nprose zorbly flux one\n```\nzorbly flux in inner code\n```\nprose zorbly flux two\n````\n';
+  const hits = scanProse(text, PHRASES);
+  assert.deepEqual(hits.map((h) => h.line), [2, 6]);
+});
+
+test('a plain code fence is still skipped even with a lead-in', () => {
+  const text = 'intro prose\n```\nzorbly flux quoted as a sample\n```\n';
   assert.equal(scanProse(text, PHRASES).length, 0);
 });
 
-test('unwrap detection tolerates surrounding blank lines', () => {
-  const { unwrapped } = unwrapOuterMarkdownFence('\n\n```md\nbody\n```\n\n');
-  assert.equal(unwrapped, true);
+test('a non-markdown language fence stays code', () => {
+  const text = 'intro\n```js\nconst zorblyFlux = 1; // zorbly flux\n```\n';
+  assert.equal(scanProse(text, PHRASES).length, 0);
 });
 
-test('a plain code fence spanning the whole document is NOT unwrapped', () => {
-  const { unwrapped } = unwrapOuterMarkdownFence('```\nbody\n```\n');
-  assert.equal(unwrapped, false);
-});
-
-test('extractProseLines reports 1-based original line numbers', () => {
+test('extractProseLines reports 1-based line numbers', () => {
   const lines = extractProseLines('a\nb');
   assert.deepEqual(lines.map((l) => l.line), [1, 2]);
 });
