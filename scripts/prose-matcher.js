@@ -65,12 +65,29 @@ const WORD_EDGE_END = /[\p{L}\p{N}]$/u;
 
 // Word boundaries only guard edges that are themselves word characters;
 // a punctuation-edged phrase keeps substring semantics on that side.
+//
+// Performance shape: the boundary regexes use Unicode property escapes,
+// which are expensive to CONSTRUCT (measured ~0.3ms each; a 140-entry
+// list paid ~40ms at startup). So each entry compiles its regex lazily,
+// and matching prefilters with a cheap lowercase substring check first:
+// the regex only ever confirms or rejects a substring hit, and a
+// boundary match is always also a substring match, so semantics are
+// unchanged.
 export function compilePhrases(list) {
   return list.map(({ bad, good }) => {
-    const escaped = bad.replace(RE_SPECIALS, '\\$&');
-    const lead = WORD_EDGE.test(bad) ? '(?<![\\p{L}\\p{N}])' : '';
-    const tail = WORD_EDGE_END.test(bad) ? '(?![\\p{L}\\p{N}])' : '';
-    return { bad, good, re: new RegExp(`${lead}${escaped}${tail}`, 'iu') };
+    const entry = { bad, good, lowerBad: bad.toLowerCase(), _re: null };
+    Object.defineProperty(entry, 're', {
+      get() {
+        if (!this._re) {
+          const escaped = bad.replace(RE_SPECIALS, '\\$&');
+          const lead = WORD_EDGE.test(bad) ? '(?<![\\p{L}\\p{N}])' : '';
+          const tail = WORD_EDGE_END.test(bad) ? '(?![\\p{L}\\p{N}])' : '';
+          this._re = new RegExp(`${lead}${escaped}${tail}`, 'iu');
+        }
+        return this._re;
+      },
+    });
+    return entry;
   });
 }
 
@@ -136,8 +153,12 @@ export function extractProseLines(text) {
 // output stable when a phrase repeats within a line.
 export function matchLine(lineText, compiled) {
   const hits = [];
-  for (const { bad, good, re } of compiled) {
-    if (re.test(lineText)) hits.push({ bad, good });
+  const lower = lineText.toLowerCase();
+  for (const entry of compiled) {
+    // Cheap substring prefilter; the boundary regex (lazily compiled)
+    // only confirms or rejects these few candidates.
+    if (!lower.includes(entry.lowerBad)) continue;
+    if (entry.re.test(lineText)) hits.push({ bad: entry.bad, good: entry.good });
   }
   return hits;
 }
