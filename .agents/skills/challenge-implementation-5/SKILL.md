@@ -7,10 +7,6 @@ description: 'Round 5 of implementation-challenge.'
 
 Round 5 of implementation-challenge. Final-pass deep audit. Are you 200% sure you've covered this from every angle and fixed every bug? If not, keep tracing. Fix what you find.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no implementation was made in this conversation, decline with: "No implementation to challenge in this conversation. Make changes first, then run the challenge chain starting with round 1."
@@ -51,6 +47,8 @@ Look for:
 
 1. **Read back your prior turns.** List every angle used so far (original implementation + rounds 1-4). Format: `Angles used: [round 0: V], [round 1: W], [round 2: X], [round 3: Y], [round 4: Z]`.
 2. **Confirm the round-5 angle**: either "using the default for this round: over-engineering check and simpler solutions" OR "overriding the default to [angle]: [reason]".
+
+Before hunting for cuts, re-read every file modified since implementation began in full surrounding context. Do not trust the diff; this round judges the accumulated implementation, including fixes from rounds 1 through 4.
 
 ## Auto-fix bugs found (when K > 0)
 

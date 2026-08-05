@@ -1,9 +1,5 @@
 When the human types `/test-it` (or "test it", "cover it", "write tests"), the implementation from build-it is in place and this stage proves it works. It sits between build-it and security-scan in the chain. It triages the change, writes new behavioral tests for what was just built, drives them to green, and stops the chain if it can't. No questions to the human except the halt case at the bottom (AGENTS.md § The flow guarantee).
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Build the check, don't punt verification
 
 If you're about to write "worth a manual check," stop and build the check instead: a test, a script, a measurement, an automated walk-through. Verification is the agent's job. Handing the human a manual test is a failure of this stage, not diligence. A tool you need but can't reach is an access request, stated plainly; it is never a manual-test handoff.
@@ -45,7 +41,9 @@ Three cases when a test is red:
 
 Two fix-and-rerun tries is the cap before halting (Step 5).
 
-When the suite reaches green, run it once more before trusting it: a pass that doesn't reproduce is a red (flaky tests are how broken work slips through), and it routes through the same three cases above.
+When the behavioral tests reach green, discover the project's canonical complete check in this order: explicit project rules, the verification commands the CI workflow actually runs, then package scripts if neither stronger source names it. Several CI verification commands remain an ordered set; don't guess a single replacement. If none defines a complete check, run the broadest existing suite and name the missing project-level check in the report instead of inventing a command. Run that complete check or set once. A red result routes through the same three cases above, and a substantive change after the green result earns another run.
+
+Targeted checks remain unlimited while fixing. A new test involving time, randomness, concurrency, or an outside process gets one targeted canary rerun even when it first passes; deterministic tests do not need an unconditional second run.
 
 A fourth case sits outside the code entirely: when an outside service fails mid-stage (an API down, a platform change), that is the world breaking, not the work. Log it, name it in the report's Deferred field, and never "fix" working code in response.
 
@@ -75,4 +73,4 @@ K counts real defects the tests revealed, fixed by changing the code. Report the
 
 ## Rationale (recorded so future edits don't drift it)
 
-The stage exists because review rounds judging untested code argue about reasoning, while rounds judging tested code argue about evidence. The never-weaken rule and the plan-derived expectations both counter the same failure: an agent grading its own homework drifts toward whatever the code already does. The grader step brings in the one reviewer that can't recognize its own work, and the cited NeurIPS 2024 result is why that seat matters. The run-it-twice rule and the outside-service case adapt the acceptance-testing discipline in Mike Fishbein's infinite-headcount factory skills (flaky greens hide broken builds; a failure of the world is never a reason to edit working code). Recorded so the lineage survives edits.
+The stage exists because review rounds judging untested code argue about reasoning, while rounds judging tested code argue about evidence. The never-weaken rule and the plan-derived expectations both counter the same failure: an agent grading its own homework drifts toward whatever the code already does. The grader step brings in the one reviewer that can't recognize its own work, and the cited NeurIPS 2024 result is why that seat matters. The narrow canary rule and the outside-service case adapt the acceptance-testing discipline in Mike Fishbein's infinite-headcount factory skills: risky tests must reproduce, while a failure of the world is never a reason to edit working code. Recorded so the lineage survives edits.

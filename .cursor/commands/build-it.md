@@ -1,9 +1,5 @@
 When the human types `/build-it` (or "build it", "build this", "implement it", "go build"), the plan is settled. Start implementing per the challenged plan. From here to handoff the chain runs without questions to the human, per AGENTS.md § The flow guarantee; the recovery paths below are the only sanctioned stops.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## The unattended-chain rule (why the stops below look the way they do)
 
 The human may queue the entire remaining chain (challenge rounds, test-it, security-scan, wrap-up, handoff) and walk away. Each queued command fires the moment the previous turn ends. Three implications:
@@ -29,6 +25,10 @@ Before the first code change, state the approach in one line ("sequential per th
 No plan survives contact with the code untouched, and under an unattended chain there is nobody to ask when it doesn't. When the territory forces a change from the challenged plan (an edge case the plan missed, an assumption that proved wrong), pick the conservative option, log it, and keep going. Don't halt; don't ask.
 
 The log lives in the plan file's `## Deviations` section, one bullet per departure with four parts: what the plan said, what the code forced, what was chosen, and a one-line lesson. Cite code locations. Implementation-challenge round 1 reads this section first and treats every entry as a prime target, because deviations are exactly where the work left the reviewed plan.
+
+## During implementation: keep tool use coherent and checks targeted
+
+Run independent reads or inspections together, but keep steps ordered when one's output feeds the next. Use bounded reads when only one section is needed. Put large command output in a file and return the useful summary without hiding evidence. Run targeted checks for the files and behavior being changed; test-it owns the first complete project check. Never combine unrelated edits or skip output just to improve a turn count.
 
 ## During implementation: commit as units land, no pull request
 

@@ -1,9 +1,5 @@
 Round 4 of implementation-challenge. Trace through the changes again from the round-4 angle. Look for bugs the prior three rounds missed. Fix what you find.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no implementation was made in this conversation, decline with: "No implementation to challenge in this conversation. Make changes first, then run the challenge chain starting with round 1."
@@ -26,6 +22,8 @@ If the work touches no external services AND has no peer precedent to compare ag
 
 1. **Read back your prior turns.** List every angle used so far (original implementation + rounds 1-3). Format: `Angles used: [round 0: X], [round 1: Y], [round 2: Z], [round 3: W]`.
 2. **Confirm the round-4 angle**: either "using the default for this round: external concerns" OR "overriding the default to [angle]: [reason]". The angle must be different from rounds 0-3.
+
+Read every file changed during round 3 in full surrounding context, plus whatever files or sources the round-4 angle newly requires. A file untouched since the last inspection does not need reprinting unless the conversation was compacted, the file changed since inspection, or this angle needs surrounding code no earlier round inspected. Any of those conditions forces a full read.
 
 ## Useful angles to rotate through
 

@@ -1,9 +1,5 @@
 Round 2 of plan-challenge. Given how much this matters, trace through the plan again from a different angle. Be sure you've done all the research and followed every thread. Look for opportunities you might be missing.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no plan was presented in this conversation (no construct-the-plan run, no inline plan content, no plan file referenced), decline with: "No plan to challenge in this conversation. Draft one first with construct-the-plan, write the plan inline above this command, or name a plan file." Don't invent an imaginary plan to challenge.

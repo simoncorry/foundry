@@ -179,3 +179,5 @@ The checker constants are the one executable home for the exact ceilings. `AGENT
 | R8 | Replacing test-it's unconditional rerun in the procedure is enough to retire the old rule. | Demoted. Test-it's rationale explicitly preserves the run-it-twice rule and would contradict the new validation ladder. | Require the rationale to carry the narrower flake-canary reason and remove the retired rule. |
 
 ## Deviations
+
+- The plan said implementation round 5 already required a full surrounding-context read. The command had only a narrow reminder to reread guards. Added the full accumulated-file read to `.cursor/commands/challenge-implementation-5.md` so the acceptance bar wins over the mistaken baseline. Lesson: verify an asserted existing safeguard before planning to leave it unchanged.

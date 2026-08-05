@@ -7,10 +7,6 @@ description: 'Round 1 of implementation-challenge.'
 
 Round 1 of implementation-challenge. Trace through the changes you just made and look for bugs or edge cases that weren't obvious. Aim for a thorough audit, not a quick scan. Fix what you find; don't just surface it.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no implementation was made in this conversation (no code edits, no file writes by the agent), decline with: "No implementation to challenge in this conversation. Make changes first, then run the challenge chain starting with round 1." Don't invent imaginary changes to challenge.

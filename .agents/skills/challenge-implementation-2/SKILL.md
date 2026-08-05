@@ -7,10 +7,6 @@ description: 'Round 2 of implementation-challenge.'
 
 Round 2 of implementation-challenge. Given how much this work matters, trace through the changes again from a different angle. Look for bugs or edge cases that weren't obvious in round 1. Fix what you find.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no implementation was made in this conversation, decline with: "No implementation to challenge in this conversation. Make changes first, then run the challenge chain starting with round 1."
@@ -30,7 +26,7 @@ If a different angle is clearly more relevant, override the default and say why.
 1. **Read back your prior turns.** List every angle used so far (original implementation + round 1). Format: `Angles used: [round 0: X], [round 1: Y]`.
 2. **Confirm the round-2 angle**: either "using the default for this round: check whether the earlier rounds' fixes broke anything new" OR "overriding the default to [angle]: [reason]". The angle must be different from rounds 0 and 1.
 
-Then re-read each modified file in full surrounding context, paying particular attention to changes made during round 1.
+Read every file changed during round 1 in full surrounding context, plus whatever files the round-2 angle newly requires. A file untouched since the last inspection does not need reprinting unless the conversation was compacted, the file changed since inspection, or this angle needs surrounding code no earlier round inspected. Any of those conditions forces a full read.
 
 ## What to look for
 

@@ -17,7 +17,7 @@ Nothing else starts until every background task this conversation spawned is res
 
 ## Step 1: Cleanup pass
 
-Re-read every file the session modified, in place, not as a diff: dead code out, unused imports out, naming consistent, comments carrying intent rather than narration. Run the project's check or lint suite and fix what it finds.
+Re-read every file the session modified, in place, not as a diff: dead code out, unused imports out, naming consistent, comments carrying intent rather than narration. Then discover the canonical complete check in the same order as test-it: explicit project rules, the verification commands CI actually runs, then package scripts. Preserve several CI commands as an ordered set. If no source names a complete check, run the broadest existing suite and report the missing project-level check instead of inventing one. Run the discovered check or set once after the cumulative review. A red result or a substantive change after that run earns another complete check; otherwise don't repeat it.
 
 ## Step 2: Review the cumulative session work
 

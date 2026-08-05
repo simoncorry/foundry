@@ -1,9 +1,5 @@
 Round 5 of plan-challenge. The demotion-review round. Different shape from rounds 1-4: instead of picking a new angle and hunting new findings, round 5 deep-reads every claim the prior rounds parked as uncertain (the "demoted claims") and verifies whether each demotion was warranted.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags. Say it plainly: "I went back through the claims I parked as uncertain; two were dismissed too quickly and go back in, three stay uncertain, one turned out to be a real problem and I've fixed the plan."
-
 ## Guard: nothing to challenge
 
 If no plan was presented in this conversation, decline with: "No plan to challenge in this conversation. Draft one first with construct-the-plan, write the plan inline above this command, or name a plan file."
