@@ -13,6 +13,7 @@ Ideas about building software that have aged well across fifty years, for design
 - [Hide what's likely to change](engineering/information-hiding.md): how to split code into modules, and the wrong-abstraction trap. Reach for it before extracting shared code or designing an interface.
 - [Theory and documentation](engineering/theory-and-documentation.md): why the code alone can't carry a project's reasoning, and what to write down instead. Reach for it when deciding what a plan or record should say.
 - [Context engineering](engineering/context-engineering.md): keeping what the agent reads lean, honest, and re-tunable. Reach for it when a rules file grows, the model generation changes, or the process feels heavier than the work it governs.
+- [Chain economics](engineering/chain-economics.md): what Foundry's source project actually measured about cost, what stayed uncertain, and which defaults the evidence supports. Reach for it before claiming a process change saves money.
 - [Clear technical writing](engineering/clear-technical-writing.md): how to explain technical work in plain English without deleting the terms the reader needs. Reach for it when writing for someone who doesn't share your context, or when a review flags unexplained language.
 
 ## Design fundamentals
