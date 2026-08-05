@@ -4,7 +4,7 @@
 // budgets the project promises. Generated command shapes are derived from the
 // source commands, so counting them again would charge the same prose twice.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -109,5 +109,16 @@ function main() {
   }
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(resolveArgvPath(process.argv[1])).href;
 if (invokedDirectly) main();
+
+function resolveArgvPath(argvPath) {
+  for (const candidate of [argvPath, `${argvPath}.js`]) {
+    try {
+      return realpathSync(candidate);
+    } catch {
+      // Try the next supported spelling.
+    }
+  }
+  return resolve(argvPath);
+}

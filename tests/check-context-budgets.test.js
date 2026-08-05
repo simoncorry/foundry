@@ -14,6 +14,7 @@ import {
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const script = join(repoRoot, 'scripts', 'check-context-budgets.js');
+const extensionlessScript = script.replace(/\.js$/, '');
 
 function makeFixture({ agents = 'rules\n', commands = { 'alpha.md': 'command\n' } } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'context-budgets-'));
@@ -122,17 +123,33 @@ test('refuses an unreadable command file', () => {
 });
 
 test('report mode stays informational while check mode enforces the ceiling', () => {
-  const root = makeFixture({ agents: 'a'.repeat(CONTEXT_LIMITS.agentsBytes + 1) });
+  const root = makeFixture({
+    agents: 'a'.repeat(CONTEXT_LIMITS.agentsBytes + 1),
+    commands: { 'small.md': 'x', 'largest.md': 'xxx' },
+  });
   try {
     const report = run(root);
     assert.equal(report.code, 0);
     assert.ok(report.out.includes('AGENTS.md'));
-    assert.ok(report.out.includes('.cursor/commands/alpha.md'));
-    assert.ok(report.out.indexOf('source commands') < report.out.indexOf('.cursor/commands/alpha.md'));
+    assert.ok(report.out.indexOf('source commands') < report.out.indexOf('.cursor/commands/largest.md'));
+    assert.ok(report.out.indexOf('.cursor/commands/largest.md') < report.out.indexOf('.cursor/commands/small.md'));
 
     const checked = run(root, ['--check']);
     assert.equal(checked.code, 1);
     assert.ok(checked.out.includes('OVER'));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the extensionless CLI spelling still executes the checker', () => {
+  const root = makeFixture();
+  try {
+    const out = execFileSync('node', [extensionlessScript, '--check'], {
+      env: { ...process.env, CONTEXT_BUDGET_ROOT: root },
+      encoding: 'utf8',
+    });
+    assert.ok(out.includes('[context-budgets] AGENTS.md'));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
