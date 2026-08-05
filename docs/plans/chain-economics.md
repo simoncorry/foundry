@@ -44,7 +44,7 @@ The selective voice gate could let an awkward short chat response through. The m
 - Foundry's current context guidance and budgets: `AGENTS.md` and `docs/wiki/engineering/context-engineering.md`.
 - Foundry's current stage behavior: `.cursor/commands/build-it.md`, `.cursor/commands/test-it.md`, `.cursor/commands/wrap-up.md`, and `.cursor/commands/challenge-implementation-{1..5}.md`.
 - Current size baseline: `AGENTS.md` 6,343 bytes; nineteen `.cursor/commands/*.md` files 105,823 bytes total.
-- Current vendor contracts, used only to keep the prose neutral: [Cursor summarization](https://docs.cursor.com/en/agent/chat/summarization) documents context management, not a savings guarantee; [Cursor pricing](https://docs.cursor.com/account/pricing) and the [Codex rate card](https://help.openai.com/en/articles/20001106-codex-rate-card) expose tool-specific token economics; [Anthropic pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) exposes separate cache-write and cache-hit rates. These are dated examples checked on 2026-08-05, not Foundry policy.
+- Current vendor contracts, used only to keep the prose neutral: [Cursor's summarization release note](https://cursor.com/changelog/1-6) documents context management, not a savings guarantee; [Cursor's pricing policy](https://cursor.com/terms/pricing/2026-03-25) and the [Codex rate card](https://help.openai.com/en/articles/20001106-codex-rate-card) expose tool-specific token economics; [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing) exposes separate cache-write and cache-hit rates. These are dated examples checked on 2026-08-05, not Foundry policy.
 
 ## File-tree change
 
