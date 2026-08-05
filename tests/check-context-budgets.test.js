@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -118,6 +118,20 @@ test('refuses an unreadable command file', () => {
     assert.throws(() => measureContextBudgets(root), /alpha\.md could not be read/);
   } finally {
     chmodSync(file, 0o600);
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('counts symlinked markdown commands instead of permitting a budget bypass', () => {
+  const root = makeFixture({ commands: {} });
+  const target = join(root, 'shared-command.md');
+  writeFileSync(target, 'linked command\n');
+  symlinkSync(target, join(root, '.cursor', 'commands', 'linked.md'));
+  try {
+    const measurement = measureContextBudgets(root);
+    assert.equal(measurement.commandCount, 1);
+    assert.equal(measurement.commandBytes, 15);
+  } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });

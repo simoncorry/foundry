@@ -37,7 +37,7 @@ export function measureContextBudgets(rootDir) {
   }
 
   const commandFiles = entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+    .filter((entry) => (entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith('.md'))
     .map((entry) => {
       const path = join(commandsDir, entry.name);
       const portablePath = relative(root, path).split(sep).join('/');
