@@ -23,6 +23,16 @@ function commandsWithLiveGate(overrides = {}) {
     .sort();
 }
 
+function hasSelectiveCentralVoicePolicy(text) {
+  const lower = text.toLowerCase();
+  const namedStages = /final plan|construct-the-plan/.test(lower) &&
+    ['frame-it', 'quiz', 'wrap-up', 'handoff'].every((stage) => lower.includes(stage));
+  const judgmentEscape = /suspects?.{0,50}dense or awkward/.test(lower);
+  const fixedReportEscape = /short structured stage reports.{0,60}(?:fixed shape|their fixed shape)/.test(lower);
+  const universal = /every response.{0,80}(?:voice|gate)|all responses.{0,80}(?:voice|gate)|before sending a substantive response.{0,80}(?:voice|gate)/.test(lower);
+  return namedStages && judgmentEscape && fixedReportEscape && !universal;
+}
+
 function hasFreshnessPolicy(text) {
   const lower = text.toLowerCase();
   const priorRoundChanges = /changed (?:during|in) (?:the )?(?:prior|preceding|round \d)/.test(lower);
@@ -58,10 +68,18 @@ test('only the five prose-heavy stages require an explicit live voice gate', () 
   assert.deepEqual(commandsWithLiveGate(), expected);
 
   const agreement = readFileSync(join(repoRoot, 'AGENTS.md'), 'utf8');
-  assert.match(agreement, /suspects? the draft is dense or awkward/i);
+  assert.equal(hasSelectiveCentralVoicePolicy(agreement), true);
 
   const universalMutation = command('build-it') + '\nRun `node scripts/voice-gate.js` before every reply.\n';
   assert.notDeepEqual(commandsWithLiveGate({ 'build-it': universalMutation }), expected);
+
+  const reworded = [
+    'Use the live checker on final plan writing, frame-it, quiz, wrap-up, and handoff.',
+    'Use it elsewhere when the agent suspects the draft is dense or awkward.',
+    'Short structured stage reports rely on their fixed shape.',
+  ].join(' ');
+  assert.equal(hasSelectiveCentralVoicePolicy(reworded), true);
+  assert.equal(hasSelectiveCentralVoicePolicy(`${reworded} Every response must run the voice gate.`), false);
 });
 
 test('middle review rounds use freshness escapes while rounds 1 and 5 require full reads', () => {
