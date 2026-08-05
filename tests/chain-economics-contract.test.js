@@ -29,7 +29,7 @@ function hasSelectiveCentralVoicePolicy(text) {
     ['frame-it', 'quiz', 'wrap-up', 'handoff'].every((stage) => lower.includes(stage));
   const judgmentEscape = /suspects?.{0,50}dense or awkward/.test(lower);
   const fixedReportEscape = /short structured stage reports.{0,60}(?:fixed shape|their fixed shape)/.test(lower);
-  const universal = /every response.{0,80}(?:voice|gate)|all responses.{0,80}(?:voice|gate)|before sending a substantive response.{0,80}(?:voice|gate)/.test(lower);
+  const universal = /(?:every|all)(?:\s+\w+){0,2}\s+responses?.{0,80}(?:voice|gate)|before sending a substantive response.{0,80}(?:voice|gate)/.test(lower);
   return namedStages && judgmentEscape && fixedReportEscape && !universal;
 }
 
@@ -79,7 +79,7 @@ test('only the five prose-heavy stages require an explicit live voice gate', () 
     'Short structured stage reports rely on their fixed shape.',
   ].join(' ');
   assert.equal(hasSelectiveCentralVoicePolicy(reworded), true);
-  assert.equal(hasSelectiveCentralVoicePolicy(`${reworded} Every response must run the voice gate.`), false);
+  assert.equal(hasSelectiveCentralVoicePolicy(`${reworded} Every substantive response must run the voice gate.`), false);
 });
 
 test('middle review rounds use freshness escapes while rounds 1 and 5 require full reads', () => {
