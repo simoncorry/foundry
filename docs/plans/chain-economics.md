@@ -1,6 +1,6 @@
 ---
 id: chain-economics
-status: PROPOSED
+status: IN_PROGRESS
 created: 2026-08-05
 ---
 
