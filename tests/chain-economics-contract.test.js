@@ -46,13 +46,15 @@ function hasFreshnessPolicy(text) {
 
 function hasValidationDiscovery(text) {
   const lower = text.toLowerCase();
-  const rules = lower.indexOf('explicit project rules');
-  const ci = lower.indexOf('ci', rules + 1);
-  const scripts = lower.indexOf('package scripts', ci + 1);
+  const rules = lower.match(/explicit project rules/);
+  const afterRules = rules ? lower.slice(rules.index + rules[0].length) : '';
+  const ci = afterRules.match(/\bci\b/);
+  const afterCi = ci ? afterRules.slice(ci.index + ci[0].length) : '';
+  const scripts = afterCi.match(/package scripts/);
   return (
-    rules >= 0 &&
-    ci > rules &&
-    scripts > ci &&
+    rules !== null &&
+    ci !== null &&
+    scripts !== null &&
     /ordered (?:check )?set|ordered set/.test(lower) &&
     /broadest existing suite/.test(lower) &&
     /missing project-level check/.test(lower)
@@ -121,5 +123,6 @@ test('test-it and wrap-up share the validation ladder without a universal green 
     'missing project-level check.',
   ].join(' ');
   assert.equal(hasValidationDiscovery(reworded), true);
+  assert.equal(hasValidationDiscovery(reworded.replace('then CI as an ordered set, ', '')), false);
   assert.equal(hasUniversalGreenRerun('When the complete check is green, run it once more.'), true);
 });
