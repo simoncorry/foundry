@@ -1,6 +1,6 @@
 ---
 id: chain-economics
-status: IN_PROGRESS
+status: SHIPPED
 created: 2026-08-05
 ---
 
