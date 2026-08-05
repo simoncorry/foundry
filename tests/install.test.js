@@ -28,10 +28,23 @@ test('fresh install populates the documented set and only that set', () => {
   assert.ok(existsSync(join(target, 'AGENTS.md')));
   assert.ok(existsSync(join(target, 'CLAUDE.md')));
   assert.ok(existsSync(join(target, 'scripts', 'phrase-list.json')));
+  assert.ok(existsSync(join(target, 'scripts', 'check-context-budgets.js')));
   assert.ok(!existsSync(join(target, 'docs')), 'wiki must stay home without --wiki');
   assert.ok(!existsSync(join(target, 'README.md')), 'Foundry\'s own README must not ride along');
   assert.ok(!existsSync(join(target, 'tests')), 'Foundry\'s tests must not ride along');
   assert.ok(r.out.includes('0 updated, 0 unchanged'));
+  rmSync(target, { recursive: true, force: true });
+});
+
+test('install copies the budget checker without rewriting consumer package scripts', () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-package-boundary-'));
+  const packageFile = join(target, 'package.json');
+  const original = JSON.stringify({ scripts: { check: 'consumer-owned-check' } }, null, 2) + '\n';
+  writeFileSync(packageFile, original);
+  const r = run([target]);
+  assert.equal(r.code, 0);
+  assert.ok(existsSync(join(target, 'scripts', 'check-context-budgets.js')));
+  assert.equal(readFileSync(packageFile, 'utf8'), original);
   rmSync(target, { recursive: true, force: true });
 });
 

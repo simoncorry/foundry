@@ -7,10 +7,6 @@ description: 'Single-round adversarial security scan.'
 
 Single-round adversarial security scan. Scan a focused surface for findings anchored to named threat classes, argue against each candidate before believing it, and require an articulated reproduction path before anything gets reported. Run it after editing security-sensitive code (auth, payments, user data, anything that parses untrusted input) and BEFORE the implementation-challenge chain.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to scan
 
 The scan covers the files modified by the agent in this conversation. If none, decline with: "No scan scope detected; make code edits in this conversation first, or name file paths explicitly after the command." Don't invent imaginary changes to scan.

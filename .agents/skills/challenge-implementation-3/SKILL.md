@@ -7,10 +7,6 @@ description: 'Round 3 of implementation-challenge.'
 
 Round 3 of implementation-challenge. Are you 200% sure you've covered this from every angle? Trace through the changes again from the round-3 angle. Fix what you find.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Guard: nothing to challenge
 
 If no implementation was made in this conversation, decline with: "No implementation to challenge in this conversation. Make changes first, then run the challenge chain starting with round 1."
@@ -30,7 +26,7 @@ If a different angle is clearly more relevant, override the default and say why.
 1. **Read back your prior turns.** List every angle used so far (original implementation + rounds 1-2). Format: `Angles used: [round 0: X], [round 1: Y], [round 2: Z]`.
 2. **Confirm the round-3 angle**: either "using the default for this round: how this code talks to its neighbours" OR "overriding the default to [angle]: [reason]". The angle must be different from rounds 0-2.
 
-Then re-read each modified file in full surrounding context and trace every seam.
+Read every file changed during round 2 in full surrounding context, plus callers, consumers, or other files the round-3 angle newly requires. A file untouched since the last inspection does not need reprinting unless the conversation was compacted, the file changed since inspection, or this angle needs surrounding code no earlier round inspected. Any of those conditions forces a full read. Then trace every seam.
 
 ## What to look for
 

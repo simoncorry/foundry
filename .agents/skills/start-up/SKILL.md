@@ -7,10 +7,6 @@ description: 'Run the session start-up.'
 
 Run the session start-up. This is the chain's opener and the reading half of the pair that makes sessions continuous: handoff writes the note, start-up reads it.
 
-## Voice
-
-Output prints to the human's chat: follow AGENTS.md § Voice. Pipe substantive drafts through `node scripts/voice-gate.js` and rewrite what it flags.
-
 ## Step 1: Preflight
 
 Check the ground you're standing on and act on what you find:
