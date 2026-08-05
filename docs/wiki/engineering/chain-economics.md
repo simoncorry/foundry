@@ -25,7 +25,7 @@ Transcript-derived dollar figures use an approximate rate and reconstructed cont
 
 The three-build pilot was heterogeneous and changed three defaults together. It can say quality held. It cannot divide a saving among selective live checks, batching, and freshness-aware rereads, and its billed cost was unavailable. The wrap-up movement is descriptive for the same reason.
 
-Tool economics also move underneath the process. As checked on August 5, 2026, [Cursor's summarization documentation](https://docs.cursor.com/en/agent/chat/summarization) describes context management rather than a savings guarantee; [Cursor pricing](https://docs.cursor.com/account/pricing), the [Codex rate card](https://help.openai.com/en/articles/20001106-codex-rate-card), and [Anthropic pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) expose different units and cache treatment. These are examples of variation, not Foundry policy. Recheck the live provider before doing money math.
+Tool economics also move underneath the process. As checked on August 5, 2026, [Cursor's summarization release note](https://cursor.com/changelog/1-6) describes context management rather than a savings guarantee; [Cursor's pricing policy](https://cursor.com/terms/pricing/2026-03-25), the [Codex rate card](https://help.openai.com/en/articles/20001106-codex-rate-card), and [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing) expose different units and cache treatment. These are examples of variation, not Foundry policy. Recheck the live provider before doing money math.
 
 ## Defaults this evidence earns
 
