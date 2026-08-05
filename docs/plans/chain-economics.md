@@ -69,7 +69,8 @@ The selective voice gate could let an awkward short chat response through. The m
  ├── scripts/
 +│   └── check-context-budgets.js
  └── tests/
-+    └── check-context-budgets.test.js
++    ├── check-context-budgets.test.js
++    └── chain-economics-contract.test.js
 ```
 
 Generated `.claude/commands/` and `.agents/skills/` copies change only through `npm run shapes`.
@@ -97,7 +98,8 @@ Proposed script surface:
 export function measureContextBudgets(rootDir): {
   agentsBytes: number,
   commandBytes: number,
-  commandCount: number
+  commandCount: number,
+  commandFiles: Array<{ path: string, bytes: number }>
 }
 
 export function evaluateContextBudgets(measurement, limits): {
@@ -106,15 +108,19 @@ export function evaluateContextBudgets(measurement, limits): {
 }
 ```
 
-The command line supports `--check` for CI failure and a default human-readable report. It reads files only and has no vendor or transcript dependency. Foundry's own `npm run check` makes the ceiling mandatory in this repository. Consumer projects receive the script through the existing installer, but enforcing it in their own check command is opt-in because Foundry does not own their package scripts.
+The command line supports `--check` for CI failure and a default human-readable report. Report mode exits zero after printing measurements. Check mode exits nonzero on a ceiling violation, missing input, unreadable file, or empty command set. Importing the module exports functions and does nothing else; CLI execution sits behind the same direct-run guard used by Foundry's other importable scripts. It reads files only and has no vendor or transcript dependency. Foundry's own `npm run check` makes the ceiling mandatory in this repository. Consumer projects receive the script through the existing installer, but enforcing it in their own check command is opt-in because Foundry does not own their package scripts.
+
+Measurement is portable: read UTF-8 text, normalize CRLF and lone CR line endings to LF, then count bytes. Refuse a missing `AGENTS.md`, a missing source-command directory, or a directory containing zero markdown commands. A broken input must never pass by measuring as zero. The report prints every command file in deterministic size-descending, path-ascending order so an overage names where the weight actually sits.
+
+The checker constants are the one executable home for the exact ceilings. `AGENTS.md` keeps its approximate human explanation and points at the checker; the economics page explains why the gate exists and how to justify a future change without copying another authoritative number.
 
 ## Build steps
 
 1. Add the economic record and correct the public claim. Create the proposed chain-economics page under `docs/wiki/engineering/`, add it to the wiki index, add one `See also` pointer from `docs/wiki/engineering/context-engineering.md`, and revise `README.md` plus `docs/light-path.md`. Include the measured positive, negative, and uncertain findings. Do not publish a savings percentage or duplicate the economic record across both wiki pages.
-2. Put teeth behind context size. Add the read-only budget script and behavioral tests, integrate it into `npm run check`, and pin both missing-file and over-budget failures. The first slice is runnable here: the current tree passes, while a temporary oversized fixture fails with an exact overage.
-3. Remove paid ritual from the voice gate. Put the selective rule in `AGENTS.md`; retain explicit live-gate calls in construct-the-plan, frame-it, quiz, wrap-up, and handoff; let the self-suspected dense-response clause cover other unusual prose. Remove the repeated `## Voice` blocks from build-it, start-up, test-it, security-scan, all five plan challenges, and all five implementation challenges. Regenerate the Claude and Codex shapes and keep the total source-command set below its new ceiling.
-4. Port freshness-aware review reads. Change implementation rounds 2 through 4 only. Each round fully reads files changed in the preceding round and any files its angle newly requires. It fully rereads everything when prior context was compacted, a file changed since inspection, or the new angle needs unseen surrounding code. Keep rounds 1 and 5 unchanged.
-5. Define the validation ladder. Update build-it, test-it, and wrap-up so targeted checks run during implementation and fixes; test-it runs one complete project check after its behavioral tests are green; wrap-up runs the final complete check after cumulative review. Extra complete checks require a red result or a substantive change after the last one. Remove the unconditional immediate rerun of an already green deterministic suite.
+2. Put teeth behind context size. Add the read-only budget script and behavioral tests, integrate it into `npm run check`, and pin both missing-file and over-budget failures. Extend the installer test to prove a fresh consumer receives the checker while its package scripts remain untouched. The first slice is runnable here: the current tree passes, while a temporary oversized fixture fails with an exact overage.
+3. Remove paid ritual from the voice gate. Put the selective rule in `AGENTS.md`; retain explicit live-gate calls in construct-the-plan, frame-it, quiz, wrap-up, and handoff; let the self-suspected dense-response clause cover other unusual prose. Remove the repeated `## Voice` blocks from build-it, start-up, test-it, security-scan, all five plan challenges, and all five implementation challenges. Add a semantic command-contract test that identifies the retained set by behavior rather than exact prose. Regenerate the Claude and Codex shapes and keep the total source-command set below its new ceiling.
+4. Port freshness-aware review reads. Change implementation rounds 2 through 4 only. Each round fully reads files changed in the preceding round and any files its angle newly requires. It fully rereads everything when prior context was compacted, a file changed since inspection, or the new angle needs unseen surrounding code. Keep rounds 1 and 5 unchanged. Extend the command-contract test to prove all three escape concepts are present in rounds 2 through 4 and that rounds 1 and 5 still require full surrounding-context reads.
+5. Define the validation ladder. Update build-it, test-it, and wrap-up so targeted checks run during implementation and fixes. Test-it discovers the canonical complete check from explicit project rules first, then the commands the CI workflow actually runs, then package scripts when neither stronger source exists. A CI workflow with several verification commands defines an ordered check set, not a guessed single script. Test-it runs the discovered check or set once after the behavioral tests are green; when no canonical check exists, it runs the broadest existing suite and names the missing project-level check in its report rather than inventing a command. Wrap-up repeats the same discovery after cumulative review. Extra complete checks require a red result or a substantive change after the last one. Remove the unconditional immediate rerun of an already green deterministic suite, and rewrite test-it's rationale so it preserves the narrower flake-canary reason instead of the retired run-it-twice rule. The command-contract test proves the two clean-chain complete-check stages, the targeted-check allowance, and the named rerun reasons without matching whole sentences.
 6. Add coherent tool-use guidance without a runner. Build-it gets one compact paragraph: run independent reads together, keep dependent steps ordered, write large outputs to a file and return a short summary, use bounded reads when only one section is needed, and never combine unrelated edits to improve a metric.
 7. Regenerate all command shapes, run `npm run check`, and inspect the final size report. The patch fails its own bar if it increases the source command total above 110 KiB or pushes `AGENTS.md` above 8 KiB.
 
@@ -125,12 +131,15 @@ The command line supports `--check` for CI failure and a default human-readable 
 - `docs/wiki/engineering/context-engineering.md` links to the economic page without repeating its evidence table or operational rules.
 - Current official vendor facts appear only as dated examples of why costs vary. No model name, price, cache duration, transcript path, billing threshold, or claim that every provider discounts cache use becomes Foundry policy.
 - `npm run check` fails when `AGENTS.md` exceeds 8,192 bytes or the nineteen source commands exceed 112,640 bytes, and passes at the current baseline.
-- Budget tests cover pass, exact-boundary pass, one-byte-over failure, missing source directory, and deterministic file ordering.
+- Budget tests cover pass, exact-boundary pass, one-byte-over failure, CRLF/LF parity, missing `AGENTS.md`, missing source directory, empty source directory, unreadable input, deterministic file ordering, the largest-contributor report, CLI exit codes, and import-without-execution. The existing installer suite proves the checker is copied to a fresh consumer without rewriting that consumer's package scripts.
+- Exact byte limits live once in the checker. `AGENTS.md` and the economic page explain and route to that source without defining independent executable values.
 - Only construct-the-plan, frame-it, quiz, wrap-up, handoff, and the central self-suspected dense-response rule require live voice-gate calls. Generated command shapes remain byte-derived from `.cursor/commands/`.
 - Foundry's own `npm run check` enforces the context ceilings. The installer copies the checker, documents how a consumer opts in, and does not rewrite a consumer project's package scripts to force adoption.
 - Implementation rounds 2 through 4 carry all three full-reread escape conditions. Rounds 1 and 5 still require a full surrounding-context read.
-- A clean chain requests one complete project check in test-it and one in wrap-up. Targeted checks, red-result reruns, and post-check substantive-change reruns remain allowed. A new test involving time, randomness, concurrency, or an outside process gets one targeted canary rerun even when the first result is green.
+- A clean chain with a canonical complete check requests it once in test-it and once in wrap-up. Discovery follows explicit project rules, then CI commands, then package scripts; multiple CI verification commands remain an ordered set. If none names a complete check, both stages use the broadest existing suite and report the gap. Targeted checks, red-result reruns, and post-check substantive-change reruns remain allowed. A new test involving time, randomness, concurrency, or an outside process gets one targeted canary rerun even when the first result is green.
+- Test-it's recorded rationale describes the narrow flake canary and no longer teaches an unconditional run-it-twice rule that contradicts the procedure.
 - Tool guidance never parallelizes work with a real data dependency and never encourages hiding output, combining unrelated edits, or optimizing a turn-count target.
+- One semantic command-contract test pins the selective voice-gate set, freshness-aware reread escapes, rounds 1 and 5 full-read rule, and validation ladder. It must accept meaning-preserving rewording and reject a reintroduced universal gate, missing reread escape, or unconditional extra complete-suite run.
 - `npm run check` is green after regeneration, link checks, jargon checks, and the new budget gate.
 
 ## Demoted-claims tracking
@@ -149,5 +158,24 @@ The command line supports `--check` for CI failure and a default human-readable 
 | R5 | R2 blanket-rerun demotion | Confirmed against `/test-it`; narrow flake canaries preserve the reason the second run existed without repeating every complete suite. | No change. |
 | R5 | R3 quiz demotion | Confirmed in `/quiz`; it is opt-in and outside ordinary-chain cost. | No change. |
 | R5 | R4 cross-vendor cache demotion | Confirmed against the dated official sources; current examples agree, but the contract is vendor-owned. | No change. |
+| R1 repeat | Every consumer project has a canonical complete check test-it can invoke. | Demoted. Some installed projects may expose only partial suites or no named check. | Added ordered discovery and an honest broadest-suite fallback with the gap reported. |
+| R1 repeat | Copying the scripts directory is enough proof that consumers receive the checker. | Demoted. That is current implementation, not a pinned install contract. | Added an installer acceptance test for the checker and the no-package-rewrite boundary. |
+| R2 repeat | Raw file bytes give a stable context-budget result on every supported checkout. | Demoted. CRLF checkouts inflate the same prose relative to LF checkouts. | Normalize line endings to LF before measuring and test parity. |
+| R2 repeat | Missing or empty command input will naturally fail the budget check. | Demoted. Zero files can produce a zero-byte pass unless it is rejected explicitly. | Refuse missing `AGENTS.md`, a missing command directory, and an empty command set. |
+| R3 repeat | A total-only budget failure is actionable enough for a future maintainer. | Demoted. It names the problem but not the files contributing most to it. | Add a stable per-command size breakdown, largest first. |
+| R3 repeat | Repeating exact ceilings in the checker and explanatory prose is harmless. | Demoted. The numbers can drift and make the prose lie about enforcement. | Make checker constants authoritative; prose points at them and carries reasons only. |
+| R4 repeat | The checker can leave exit behavior implicit. | Demoted. CI needs violations and broken inputs to fail, while a report-only invocation should remain informational. | Defined zero/nonzero behavior for report and check modes. |
+| R4 repeat | Exported functions imply the module is safe to import in tests. | Demoted. A top-level CLI path could inspect the real checkout or exit during import. | Require a direct-run guard and an import-without-execution test. |
+| R5 repeat | R1-repeat complete-check discovery | Escalated after rereading test-it, wrap-up, package scripts, and CI ownership. Package script names are weaker evidence than the commands CI actually runs. | Reordered discovery to project rules, CI, then package scripts; preserve multi-command CI verification as a set. |
+| R5 repeat | R1-repeat installer contract | Confirmed in `scripts/install.js` and its fresh-install fixture. | No change. |
+| R5 repeat | R2-repeat line-ending portability | Confirmed; the repository has no checkout-level line-ending pin. | No change. |
+| R5 repeat | R2-repeat missing-input refusal | Confirmed; an empty sum needs an explicit invalid-input branch. | No change. |
+| R5 repeat | R3-repeat actionable budget output | Confirmed; current totals alone would not identify the largest command contributors. | No change. |
+| R5 repeat | R3-repeat single limit authority | Confirmed against the existing approximate `AGENTS.md` budget note. | No change. |
+| R5 repeat | R4-repeat CLI exit contract | Confirmed by the `&&`-chained `npm run check` pipeline. | No change. |
+| R5 repeat | R4-repeat import safety | Confirmed against the import-safe pattern and regression test in `scripts/rotate-sessions.js`. | No change. |
+| R6 | Generated-shape parity and prose acceptance bars are enough to preserve the three command-policy changes. | Demoted. Shape generation proves copies agree, not that the source commands retain the intended semantics. | Add one behavior-based command-contract test covering voice routing, reread escapes, and the validation ladder. |
+| R7 | R6 semantic command-policy contract | Confirmed after rereading the generated-shape suite. It proves copies are synchronized but never inspects the source commands' economic policies. | No change. |
+| R8 | Replacing test-it's unconditional rerun in the procedure is enough to retire the old rule. | Demoted. Test-it's rationale explicitly preserves the run-it-twice rule and would contradict the new validation ladder. | Require the rationale to carry the narrower flake-canary reason and remove the retired rule. |
 
 ## Deviations
