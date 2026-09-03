@@ -8,14 +8,14 @@ A tool's chrome is a reference surface, not a subject. Everything in it is read 
 
 ## Density: the row grid
 
-- **Rows are 22 to 24px tall.** VS Code trees render every row at 22px (`height: 22px; line-height: 22px`) with 16px icons padded 6px from the label. Figma's layer rows sit at 24px. A 28px row reads as a list of buttons, not a tree.
-- **UI text is 11 to 13px in a proportional sans.** VS Code's workbench text is 13px; its filter inputs are 12px; its section titles are 11px. Figma's UI3 body is 11px with 12px for emphasis. Monospace stays reserved for what is genuinely code or numeric (coordinates, sizes, shortcut keys), where equal-width digits stop the text from jittering as values change.
+- **Rows are 22 to 28px tall, and density is a floor, not a target.** VS Code trees render every row at 22px (`height: 22px; line-height: 22px`, measured from source) with 16px icons padded 6px from the label. Figma's rows are visibly taller (about 28 from a screenshot at unknown scale; not measured from its published kit). Below 22 the rows stop being separable; above about 32 they stop reading as a list. Where a tool lands inside that band is the owner's eye, decided in the real layout with real content, never from the number alone.
+- **UI text is 11 to 13px in a proportional sans.** VS Code's default workbench font size is 13px; its filter inputs are 12px; its section titles are 11px. Figma's UI text is 11px (its published kit; not re-measured here). Monospace stays reserved for what is genuinely code or numeric (coordinates, sizes, shortcut keys), where equal-width digits stop the text from jittering as values change.
 - **Indent is one step per depth, 12 to 16px**, with a chevron (a "twistie" in VS Code's vocabulary) occupying the first step so labels at the same depth align on one vertical line whether or not they can expand.
 - **Labels truncate with an ellipsis, never wrap.** Every VS Code row label carries `overflow: hidden; text-overflow: ellipsis; white-space: nowrap`. A wrapped row breaks the grid and hides that the column is too narrow.
 
 ## Selection and hover: tint, never invert
 
-- **Hover is a step of lightness, not a color.** VS Code's `list.hoverBackground` is `#2A2D2E` on a `#1E1E1E` sidebar: about four percent lighter, no hue. Hover is the most frequent state in the tool and must be nearly silent.
+- **Hover is a step of lightness, not a color.** VS Code's `list.hoverBackground` is `#2A2D2E` on Dark+'s `#252526` sidebar: about two percent lighter, no hue. Hover is the most frequent state in the tool and must be nearly silent.
 - **Selection is a tinted wash with the text left alone.** VS Code's `list.inactiveSelectionBackground` is `#37373D` (neutral, about ten percent lighter than the panel); its `list.activeSelectionBackground` (the list has keyboard focus) is `#04395E`, a dark blue wash with white text. Figma marks the selected layer with a pale blue wash and blue text. Neither tool inverts the row to a solid block. An inverted (black-on-white or white-on-black) row is a button pressed down; five of them on one screen and the eye cannot find the one that matters.
 - **Active-tool state in a toolbar is a filled square around the icon**, one step of elevation or a tinted fill, never a full inversion of the toolbar itself.
 - **Focus is a ring, drawn separately from selection**, so keyboard users can tell "where the cursor is" from "what is selected" (VS Code has `list.focusOutline` distinct from the selection backgrounds).
