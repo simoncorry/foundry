@@ -26,6 +26,7 @@ The design canon distilled, for interface work and hierarchy, grouping, labels, 
 - [Typography and grids](design/typography-and-grids.md): type that reads well and grids that hold. Reach for it when setting text or structuring a page.
 - [Color](design/color.md): judgment about color relationships, not color math. Reach for it when colors fight.
 - [Systems and craft](design/systems-and-craft.md): patterns, design systems, and what "good design" has meant to the people who defined it. Reach for it when building components meant to be reused.
+- [Tool interfaces](design/tool-interfaces.md): the measured grammar of professional tools (row grid, tinted selection, one label voice, icon header actions, re-drawn platform controls, dialog anatomy). Reach for it when designing or reviewing an editor, sidebar, panel, or modal.
 
 ## Motion fundamentals
 

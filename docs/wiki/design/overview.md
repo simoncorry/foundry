@@ -21,6 +21,7 @@ Sourcing, honest by construction: synthesized from the canon curated at [designb
 - [Typography and grids](typography-and-grids.md): Bringhurst's discipline, type as interface, grid systems. When shaping a surface.
 - [Systems and craft](systems-and-craft.md): patterns and fit, atomic design, design systems as shared language, Rams, why-before-how. When building things meant to be reused.
 - [Color](color.md): Albers' relativity and functional color roles. When color is the question.
+- [Tool interfaces](tool-interfaces.md): the measured grammar of professional tools (row grid, tinted selection, one label voice, icon header actions, chevrons, re-drawn platform controls, dialog anatomy). When designing or reviewing an editor, a sidebar, a panel, or a modal.
 
 ## Two standing postures
 
