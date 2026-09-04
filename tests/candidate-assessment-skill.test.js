@@ -7,6 +7,32 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const skillRoot = join(repoRoot, 'skills', 'candidate-assessment');
 
+const hiringManagerCriteria = [
+  'Distinctive Edge and Generative Curiosity',
+  'Problem Finding, Autonomy, and Impact',
+  'Velocity, Learning, and Product Judgment',
+  'Constructive Challenge, Self-Awareness, and Trust',
+  'AI-Native Builder Practice',
+];
+
+const portfolioCriteria = [
+  'Problem Choice and Framing',
+  'Personal Ownership and Judgment',
+  'Craft, Taste, and Human Intent',
+  'Shipping, Customer Contact, and Learning',
+  'Distinctive Spike',
+  'AI-Enabled Build Practice',
+];
+
+const designExerciseCriteria = [
+  'Question Quality and Discovery',
+  'Problem Framing and Perspective',
+  'Exploration and Distinctive Thinking',
+  'Prioritization, Tradeoffs, and Velocity',
+  'Collaboration and Adaptation',
+  'Direction, Craft, and Human Intent',
+];
+
 function read(relativePath) {
   return readFileSync(join(skillRoot, relativePath), 'utf8');
 }
@@ -33,7 +59,7 @@ test('candidate assessment is a complete installable skill', () => {
   }
 });
 
-test('the Ashby output contract keeps its five paste-ready fields and 1 to 4 decision scale', () => {
+test('the Ashby output contract keeps its paste-ready fields and 1 to 4 decision scale', () => {
   const scoring = read('references/scoring-and-output.md');
 
   for (const heading of [
@@ -66,37 +92,17 @@ test('each interview plan preserves its intended evidence and gates', () => {
   const exercise = read('references/design-exercise.md');
   const synthesis = read('references/final-synthesis.md');
 
-  for (const criterion of [
-    'Distinctive Edge and Generative Curiosity',
-    'Problem Finding, Autonomy, and Impact',
-    'Velocity, Learning, and Product Judgment',
-    'Constructive Challenge, Self-Awareness, and Trust',
-    'AI-Native Builder Practice',
-  ]) {
+  for (const criterion of hiringManagerCriteria) {
     assert.ok(hiringManager.includes(`### ${criterion}`), `hiring manager should score ${criterion}`);
   }
   assert.equal((hiringManager.match(/Core gate\./g) ?? []).length, 3);
 
-  for (const criterion of [
-    'Problem Choice and Framing',
-    'Personal Ownership and Judgment',
-    'Craft, Taste, and Human Intent',
-    'Shipping, Customer Contact, and Learning',
-    'Distinctive Spike',
-    'AI-Enabled Build Practice',
-  ]) {
+  for (const criterion of portfolioCriteria) {
     assert.ok(portfolio.includes(`### ${criterion}`), `portfolio should score ${criterion}`);
   }
   assert.equal((portfolio.match(/Core gate\./g) ?? []).length, 3);
 
-  for (const criterion of [
-    'Question Quality and Discovery',
-    'Problem Framing and Perspective',
-    'Exploration and Distinctive Thinking',
-    'Prioritization, Tradeoffs, and Velocity',
-    'Collaboration and Adaptation',
-    'Direction, Craft, and Human Intent',
-  ]) {
+  for (const criterion of designExerciseCriteria) {
     assert.ok(exercise.includes(`### ${criterion}`), `design exercise should score ${criterion}`);
   }
   assert.equal((exercise.match(/Core gate\./g) ?? []).length, 2);
@@ -121,6 +127,18 @@ test('the Ashby setup replaces the inherited generic trait scorecard', () => {
     '## Design Exercise Scorecard',
   ]) {
     assert.ok(setup.includes(plan), `${plan} should remain configured`);
+  }
+
+  for (const criterion of [
+    ...hiringManagerCriteria,
+    ...portfolioCriteria,
+    ...designExerciseCriteria,
+  ]) {
+    assert.ok(setup.includes(`\`${criterion}\``), `Ashby setup should include ${criterion}`);
+  }
+
+  for (const label of ['1 Strong No', '2 No', '3 Yes', '4 Strong Yes']) {
+    assert.ok(setup.includes(label), `Ashby setup should define ${label}`);
   }
 
   assert.doesNotMatch(setup, /Trait - Smile|Trait - Fast-brained|Trait - Care and Intensity/);
