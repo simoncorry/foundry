@@ -160,3 +160,13 @@ test('the Ashby setup replaces the inherited generic trait scorecard', () => {
   assert.doesNotMatch(setup, /Trait - Smile|Trait - Fast-brained|Trait - Care and Intensity/);
   assert.match(setup, /leave it unscored and say so in the comment/);
 });
+
+test('large-company AI examples do not stand in for startup hiring evidence', () => {
+  const research = read('references/research-basis.md');
+  const startupEvidence = section(research, '## Early-Stage Hiring Evidence', '## AI Practice Evidence');
+  const aiEvidence = section(research, '## AI Practice Evidence', '## Deliberate Departures From Conventional Rubrics');
+
+  assert.doesNotMatch(startupEvidence, /Figma|Anthropic/);
+  assert.match(aiEvidence, /Figma and Anthropic are evidence for the AI-practice bar only/);
+  assert.match(aiEvidence, /They are not the model for startup hiring or process/);
+});

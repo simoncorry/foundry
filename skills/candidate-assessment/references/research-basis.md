@@ -10,14 +10,19 @@ This file explains the durable choices behind the rubric. It is not candidate ev
 - [Due Diligence interview](https://www.youtube.com/watch?v=Iq6FK3y7x64): look for people who see problems and create without direction. Velocity matters because it creates customer learning, and owning the damage from moving too fast matters just as much.
 - [The Cost of Context](https://simoncorry.com/blog/2026/08/06/the-cost-of-context), [Design Process, Meet Agent Process](https://simoncorry.com/blog/2026/07/15/design-process-meet-agent-process), and [A Researcher Out of Time](https://simoncorry.com/blog/2026/05/20/a-researcher-out-of-time): strong AI practice is an inspectable, long-lived process with explicit claims, tests, reversals, and human review.
 
-## External Evidence and Startup Practice
+## Early-Stage Hiring Evidence
 
 - [First Round on the founding designer role](https://review.firstround.com/the-ultimate-guide-to-the-founding-designer-role/): early designers need autonomy, ambiguity tolerance, business prioritization, self-critique, and a lightweight process. Copying a large-company design process is a poor fit.
 - [Emotive on hiring startup product designers](https://medium.com/emotive-design/how-we-hire-product-designers-at-emotive-12854dfc2b99): early-stage work rewards versatility, context switching, problem-solving, autonomy, and agility.
 - [Monzo's product design hiring process](https://monzo.com/blog/2019/01/17/monzo-product-designer-jobs): consistent questions, realistic challenges, and attention to framing, collaboration, and tradeoffs produce more useful evidence than puzzle exercises.
 - [Hartwell et al. on structured interviews](https://www.sciencedirect.com/science/article/pii/S0148296319301985): job-related behavioral and situational questions improve the usefulness of interview evidence.
 - [Ashby score field guidance](https://www.ashbyhq.com/product-updates/form-sections-question-descriptions-and-scores): explicit criteria, descriptions, comments, and anchored scores support a usable scorecard.
+
+## AI Practice Evidence
+
 - [Figma's AI Model Designer role](https://job-boards.greenhouse.io/figma/jobs/5711913004) and [Anthropic's product design workflow](https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf): current AI-native design includes model evaluation, technical understanding, direct implementation, functional prototypes, and attention to states and edge cases.
+
+Figma and Anthropic are evidence for the AI-practice bar only. They are not the model for startup hiring or process.
 
 ## Deliberate Departures From Conventional Rubrics
 
