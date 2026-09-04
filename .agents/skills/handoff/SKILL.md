@@ -11,6 +11,17 @@ When the human types `/handoff` (or "next session", "what's next", "handoff note
 
 Handoff may not emit while any background task spawned this conversation is unresolved: await finite work, act on landed-but-unhandled results, retire session daemons, or (narrowly, never for a verification task) abandon with the reason written down. Right after wrap-up this is a quick re-check that nothing new was spawned; standalone, the full barrier applies first. See AGENTS.md § The background-work barrier.
 
+## Pull request authority
+
+Invoking handoff is explicit permission to resolve pull requests created by the work being handed off. Do this before writing the handoff note:
+
+1. Inspect the exact head commit, base branch, required reviews, and checks.
+2. If the pull request is ready and the work is meant to ship, merge it using the repository's merge policy. Never bypass a failed check or required review.
+3. If the pull request is superseded, abandoned, or should not ship, close it without merging.
+4. Prove the final GitHub state, clean up the resolved branch, synchronize the base branch, and verify any resulting base-branch check.
+
+This authority is narrow. It covers pull requests created by this session or explicitly named in the work being handed off. It does not cover unrelated pull requests, product or provider changes, spending, deployment, or any other external effect. If an in-scope pull request cannot be resolved safely, leave it open and state the exact blocker in the handoff.
+
 ## Voice
 
 The output IS chat to the human: follow AGENTS.md § Voice, including in every fill-in. Pipe the draft through `node scripts/voice-gate.js` before sending.
@@ -74,10 +85,10 @@ If nothing's left over and nothing qualifies, output exactly: `Nothing to hand o
 
 The recommended focus picks ONE thing and justifies it in a sentence. Don't offer a menu.
 
-## Read-only
+## Repository boundary
 
-Handoff modifies no files. It produces the block and stops.
+After resolving in-scope pull requests, handoff modifies no product or documentation files. It produces the block and stops. The Git and GitHub state changes described above are the only writes this command authorizes.
 
 ## Rationale (recorded so future edits don't drift it)
 
-The two-half shape exists because the note serves two readers with opposite needs: the human skims the top in ten seconds to remember where things stand, and the next session's agent executes the bottom verbatim. Mixing the two produces a note neither reader trusts. The explicit STOP instruction in the agent half is load-bearing: without it, next session's agent tends to run the whole chain uninvited, and the human loses the checkpoints the process exists for.
+The two-half shape exists because the note serves two readers with opposite needs: the human skims the top in ten seconds to remember where things stand, and the next session's agent executes the bottom verbatim. Mixing the two produces a note neither reader trusts. The pull request step belongs before the note because handing off a ready or obsolete pull request just makes the next session repeat the end of this one. The explicit STOP instruction in the agent half is load-bearing: without it, next session's agent tends to run the whole chain uninvited, and the human loses the checkpoints the process exists for.

@@ -53,6 +53,8 @@ Once build-it starts, the chain runs without questions to the human until handof
 
 No session closes while anything it spawned is still running or unread: a subagent, a background shell, a pending check. Await it, act on it, retire it, or explicitly abandon it with the reason written down. A verification task can never be abandoned. Closing a session around pending work ships an incomplete session.
 
+Invoking handoff is explicit, narrow permission to resolve pull requests created by the work being handed off. Merge a ready pull request when the work is meant to ship, or close it without merging when it is superseded or abandoned. Prove the final state, clean up its branch, synchronize the base branch, and verify the resulting check. This permission never reaches unrelated pull requests, bypassed reviews, failed checks, deployments, spending, or provider changes.
+
 ## Voice
 
 Everything written for a human reads like a person wrote it: plain words, short sentences, no jargon stacks, no em dashes. Final plan prose, frame-it, quiz, wrap-up, and handoff run through `node scripts/voice-gate.js`. Other responses use the live gate when the agent itself suspects the draft is dense or awkward; short structured stage reports rely on their fixed shape. The same list also has teeth: `npm run check` fails when a listed phrase lands in committed prose (docs, command files, code comments), so the voice bar holds without anyone remembering to hold it. The gate only knows the phrases in `scripts/phrase-list.json`; wrap-up's jargon step grows that list every session, so it keeps pace with the jargon you actually produce. For vocabulary the list doesn't know yet, the test is: would someone outside the codebase follow this sentence? If not, rewrite it.
