@@ -37,6 +37,22 @@ function read(relativePath) {
   return readFileSync(join(skillRoot, relativePath), 'utf8');
 }
 
+function section(source, heading, nextHeading) {
+  const start = source.indexOf(heading);
+  assert.notEqual(start, -1, `${heading} should exist`);
+  const end = nextHeading ? source.indexOf(nextHeading, start + heading.length) : source.length;
+  assert.notEqual(end, -1, `${nextHeading} should follow ${heading}`);
+  return source.slice(start, end);
+}
+
+function levelThreeHeadings(source) {
+  return [...source.matchAll(/^### (.+)$/gm)].map((match) => match[1]);
+}
+
+function namedScoreFields(source) {
+  return [...source.matchAll(/^- `([^`]+)`:/gm)].map((match) => match[1]);
+}
+
 test('candidate assessment is a complete installable skill', () => {
   const skill = read('SKILL.md');
   const metadata = read('agents/openai.yaml');
@@ -92,19 +108,13 @@ test('each interview plan preserves its intended evidence and gates', () => {
   const exercise = read('references/design-exercise.md');
   const synthesis = read('references/final-synthesis.md');
 
-  for (const criterion of hiringManagerCriteria) {
-    assert.ok(hiringManager.includes(`### ${criterion}`), `hiring manager should score ${criterion}`);
-  }
+  assert.deepEqual(levelThreeHeadings(hiringManager), hiringManagerCriteria);
   assert.equal((hiringManager.match(/Core gate\./g) ?? []).length, 3);
 
-  for (const criterion of portfolioCriteria) {
-    assert.ok(portfolio.includes(`### ${criterion}`), `portfolio should score ${criterion}`);
-  }
+  assert.deepEqual(levelThreeHeadings(portfolio), portfolioCriteria);
   assert.equal((portfolio.match(/Core gate\./g) ?? []).length, 3);
 
-  for (const criterion of designExerciseCriteria) {
-    assert.ok(exercise.includes(`### ${criterion}`), `design exercise should score ${criterion}`);
-  }
+  assert.deepEqual(levelThreeHeadings(exercise), designExerciseCriteria);
   assert.equal((exercise.match(/Core gate\./g) ?? []).length, 2);
   assert.match(exercise, /Strong visual output cannot rescue/);
 
@@ -129,16 +139,22 @@ test('the Ashby setup replaces the inherited generic trait scorecard', () => {
     assert.ok(setup.includes(plan), `${plan} should remain configured`);
   }
 
-  for (const criterion of [
-    ...hiringManagerCriteria,
-    ...portfolioCriteria,
-    ...designExerciseCriteria,
-  ]) {
-    assert.ok(setup.includes(`\`${criterion}\``), `Ashby setup should include ${criterion}`);
-  }
+  assert.deepEqual(
+    namedScoreFields(section(setup, '## Hiring Manager Scorecard', '## Portfolio Review Scorecard')),
+    hiringManagerCriteria,
+  );
+  assert.deepEqual(
+    namedScoreFields(section(setup, '## Portfolio Review Scorecard', '## Design Exercise Scorecard')),
+    portfolioCriteria,
+  );
+  assert.deepEqual(
+    namedScoreFields(section(setup, '## Design Exercise Scorecard', '## Field-Level Scale Description')),
+    designExerciseCriteria,
+  );
 
-  for (const label of ['1 Strong No', '2 No', '3 Yes', '4 Strong Yes']) {
-    assert.ok(setup.includes(label), `Ashby setup should define ${label}`);
+  const overall = section(setup, '### Overall Recommendation', '### Reason for Recommendation');
+  for (const mapping of ['- `4`: Strong Yes', '- `3`: Yes', '- `2`: No', '- `1`: Strong No']) {
+    assert.ok(overall.includes(mapping), `Overall Recommendation should define ${mapping}`);
   }
 
   assert.doesNotMatch(setup, /Trait - Smile|Trait - Fast-brained|Trait - Care and Intensity/);
