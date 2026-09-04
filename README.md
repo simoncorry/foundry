@@ -56,6 +56,10 @@ Two folders keep the chain from starting every session at zero. `docs/sessions/`
 
 The wiki ships stocked. Three reference shelves come with the repo: engineering fundamentals (Brooks, Parnas, Naur, and the essential-vs-accidental and wrong-abstraction lenses the challenge rounds cite), design fundamentals (the Norman-to-Rams canon distilled for hierarchy, grouping, type, and color arguments), and motion fundamentals (easing, springs, gesture feel, and motion cost, adapted with credit from Emil Kowalski's and Meng To's MIT-licensed work). Start at [the index](docs/wiki/INDEX.md).
 
+## Optional skills
+
+Foundry also keeps a small set of standalone skills that are useful outside the build chain. [Candidate Assessment](skills/candidate-assessment/SKILL.md) turns rough Product Design interview notes into direct, evidence-led Ashby feedback for hiring manager interviews, portfolio reviews, design exercises, and final decisions. It is deliberately opinionated about early-stage designers: problem finding, a useful spike, customer-led velocity, visible craft judgment, and real AI build practice. Install it by asking Codex to install `skills/candidate-assessment` from this repository.
+
 ## What it costs
 
 The full chain is thorough and token-heavy. On a mid-size feature it plausibly lands in the low hundreds of thousands of tokens end to end, which is real money on metered plans. The review rounds are not automatically the expensive part: in the source project's measured runs, build volume, repeated context-heavy reads, duplicate checks, and late mechanical work were often larger contributors. The rounds still found defects late in the chain.

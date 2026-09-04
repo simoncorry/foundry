@@ -1,0 +1,4 @@
+interface:
+  display_name: "Candidate Assessment"
+  short_description: "Turn interview notes into sharp Ashby feedback"
+  default_prompt: "Use $candidate-assessment to assess this Product Design interview for Ashby."
