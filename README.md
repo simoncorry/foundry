@@ -70,7 +70,7 @@ What you actually type. Each stage is a slash command (the filename becomes the 
 2. **construct-the-plan**, and read the narrative half it writes for you.
 3. **frame-it**, and answer its three to five questions. This is your last required moment at the keyboard.
 4. Queue **challenge-plan** rounds one through five, **build-it**, **test-it**, **challenge-implementation** rounds one through five, and **wrap-up**. Walk away; every stage after frame-it runs unattended.
-5. Come back to one pull request and a plain-English summary of what you now have. **handoff** when you want a bridge to next time, **quiz** when you want to be tested on what shipped.
+5. Come back to one pull request and a plain-English summary of what you now have. **handoff** when you want a bridge to next time. Invoking it also authorizes the agent to merge a ready pull request from that work, or close it without merging when it should not ship. Use **quiz** when you want to be tested on what shipped.
 
 ## Getting started
 
