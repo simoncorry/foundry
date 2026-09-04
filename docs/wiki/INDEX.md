@@ -15,6 +15,7 @@ Ideas about building software that have aged well across fifty years, for design
 - [Context engineering](engineering/context-engineering.md): keeping what the agent reads lean, honest, and re-tunable. Reach for it when a rules file grows, the model generation changes, or the process feels heavier than the work it governs.
 - [Chain economics](engineering/chain-economics.md): what Foundry's source project actually measured about cost, what stayed uncertain, and which defaults the evidence supports. Reach for it before claiming a process change saves money.
 - [Clear technical writing](engineering/clear-technical-writing.md): how to explain technical work in plain English without deleting the terms the reader needs. Reach for it when writing for someone who doesn't share your context, or when a review flags unexplained language.
+- [Standalone skills](engineering/standalone-skills.md): how to package and verify an optional skill without turning it into another Foundry stage. Reach for it when adding a reusable tool outside the build chain.
 
 ## Design fundamentals
 
