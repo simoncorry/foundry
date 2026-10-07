@@ -50,6 +50,7 @@ test("re-install removes old Foundry command copies and keeps the project's own"
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'build-it.md'), 'an older Foundry copy\n');
     writeFileSync(join(dir, 'deploy.md'), 'the project\'s own command\n');
+    writeFileSync(join(dir, 'solo.md'), 'the project\'s own command, named like a newer Foundry one\n');
   }
   const r = run([target]);
   assert.equal(r.code, 0);
@@ -60,6 +61,9 @@ test("re-install removes old Foundry command copies and keeps the project's own"
   assert.ok(!existsSync(join(target, '.claude', 'commands', 'build-it.md')));
   assert.equal(readFileSync(join(target, '.cursor', 'commands', 'deploy.md'), 'utf8'), 'the project\'s own command\n');
   assert.equal(readFileSync(join(target, '.claude', 'commands', 'deploy.md'), 'utf8'), 'the project\'s own command\n');
+  for (const tool of ['.cursor', '.claude']) {
+    assert.ok(existsSync(join(target, tool, 'commands', 'solo.md')), `${tool}: solo never shipped as an old command`);
+  }
   assert.ok(existsSync(join(target, '.agents', 'skills', 'build-it', 'SKILL.md')));
   rmSync(target, { recursive: true, force: true });
 });

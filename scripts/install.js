@@ -20,8 +20,9 @@
 //
 // Older installs shipped command copies in .cursor/commands/ and
 // .claude/commands/, which Cursor lists next to the skills as duplicates.
-// After every copy succeeds, files there named after a Foundry command are
-// removed; anything else in those folders is the project's own and stays.
+// After every copy succeeds, files there named after a command those
+// installs shipped are removed; anything else in those folders is the
+// project's own and stays.
 //
 // Usage:
 //   node scripts/install.js <target-dir> [--wiki] [--dry-run]
@@ -41,6 +42,14 @@ const COPY_SET = ['.agents', '.claude/skills', 'AGENTS.md', 'scripts'];
 const WIKI = 'docs/wiki';
 const CLAUDE_IMPORT = '@AGENTS.md';
 const OLD_COMMAND_DIRS = ['.cursor/commands', '.claude/commands'];
+// Frozen: the names the old command folders ever held. Commands added since
+// (solo onward) never shipped there, so a file by that name is the project's.
+const OLD_COMMAND_NAMES = new Set([
+  'build-it', 'challenge-implementation-1', 'challenge-implementation-2', 'challenge-implementation-3',
+  'challenge-implementation-4', 'challenge-implementation-5', 'challenge-plan-1', 'challenge-plan-2',
+  'challenge-plan-3', 'challenge-plan-4', 'challenge-plan-5', 'construct-the-plan', 'frame-it', 'handoff',
+  'quiz', 'security-scan', 'start-up', 'test-it', 'wrap-up',
+]);
 
 function fail(message) {
   console.error(`[install] ${message}`);
@@ -172,7 +181,6 @@ if (createClaude) created.push('CLAUDE.md');
 const claudeMissesImport =
   !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
 
-const commandNames = new Set(JSON.parse(readFileSync(join(foundryRoot, 'scripts', 'foundry-commands.json'), 'utf8')));
 const removed = [];
 for (const dir of OLD_COMMAND_DIRS) {
   if (!existsSync(join(target, dir)) || !statSync(join(target, dir)).isDirectory()) continue;
@@ -184,7 +192,7 @@ for (const dir of OLD_COMMAND_DIRS) {
   }
   for (const entry of readdirSync(join(target, dir), { withFileTypes: true })) {
     if (entry.isDirectory() || !entry.name.endsWith('.md')) continue;
-    if (commandNames.has(entry.name.replace(/\.md$/, ''))) removed.push(join(dir, entry.name));
+    if (OLD_COMMAND_NAMES.has(entry.name.replace(/\.md$/, ''))) removed.push(join(dir, entry.name));
   }
 }
 
