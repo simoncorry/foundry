@@ -120,7 +120,10 @@ test('a byte-order mark is dropped without stacking a second header', () => {
     const body = 'Marked file. Body.\n';
     writeSource(root, 'alpha', '\uFEFF' + buildSkill('alpha', body));
     assert.equal(run(root).code, 0);
-    assert.equal(readFileSync(sourcePath(root, 'alpha'), 'utf8'), buildSkill('alpha', body));
+    assert.equal(
+      readFileSync(sourcePath(root, 'alpha'), 'utf8'),
+      "---\nname: 'alpha'\ndescription: 'Marked file.'\ndisable-model-invocation: true\n---\n\nMarked file. Body.\n"
+    );
     assert.equal(run(root, ['--confirm']).code, 0);
   });
 });

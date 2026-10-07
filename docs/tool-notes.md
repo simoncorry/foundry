@@ -16,7 +16,7 @@ Codex reads each command as a skill at `.agents/skills/<name>/`, invoked with a 
 
 Cursor reads `.agents/skills/<name>/SKILL.md` as one of its own skill folders the moment you open the repo, and the folder name becomes the slash command. Zero setup. The header's manual-only switch turns each skill into a deliberate slash command, so Cursor never applies a stage on its own. Foundry used to ship a separate Cursor commands folder as well. Cursor listed those commands beside the skills, so every stage appeared twice; re-running the installer clears the old copies out of a project.
 
-Cursor also loads `.claude/skills/` for compatibility, so it sees each skill twice by name. Cursor 3.17 and later merge same-named skills, and the two copies are byte-identical, so whichever one it keeps is the same file. Don't fix a duplicate by turning off Cursor's "Include Third-Party Plugins, Skills, and Other Configs" setting. Cursor staff have said it can stop `.agents/` loading too, which would remove every Foundry stage.
+Cursor also loads `.claude/skills/` for compatibility, so it sees each skill twice by name. Cursor staff reported that version 3.17 merges same-named skills across its skill folders (forum thread 160677, August 2026). The two copies are byte-identical, so whichever one Cursor keeps is the same file. That report was about personal skill folders. If a stage still shows twice in a project's slash menu, Cursor isn't merging there, and the fix belongs in Foundry's layout, not in your settings. Don't fix a duplicate by turning off Cursor's "Include Third-Party Plugins, Skills, and Other Configs" setting. Cursor staff have said it can stop `.agents/` loading too, which would remove every Foundry stage.
 
 ## Cursor: plan mode
 
