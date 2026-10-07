@@ -141,15 +141,20 @@ const portable = (rel) => rel.split(sep).join('/');
 
 // Every blob each install-set path has held in Foundry's history, keyed by
 // path. Null when this checkout has no usable history (a downloaded zip, or
-// git missing); then only the current version counts as Foundry's.
+// git missing); then only the current version counts as Foundry's. A
+// shallow clone answers too, but with only the versions it fetched.
+function git(args) {
+  return execFileSync('git', ['-C', foundryRoot, ...args], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024,
+  });
+}
+
+let shallow = false;
 function foundryHistory() {
   let out;
   try {
-    out = execFileSync(
-      'git',
-      ['-C', foundryRoot, 'log', '--format=', '--raw', '--no-abbrev', '--no-renames', '--relative', '--', ...wanted],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024 }
-    );
+    out = git(['log', '--root', '--format=', '--raw', '--no-abbrev', '--no-renames', '--relative', '--', ...wanted]);
+    shallow = git(['rev-parse', '--is-shallow-repository']).trim() === 'true';
   } catch {
     return null;
   }
@@ -406,8 +411,12 @@ try {
 } catch {
   // No package.json, or one Node itself would reject: nothing to say here.
 }
-if (kept.length > 0 && history === null) {
-  notes.push("this Foundry checkout has no git history, so only files matching this exact version count as Foundry's copies; an older untouched copy shows as kept. Re-run with --overwrite if those are untouched.");
+if (kept.length > 0 && (history === null || shallow)) {
+  notes.push(
+    `this Foundry checkout has ${history === null ? 'no git history' : 'only part of its git history (a shallow clone)'}, ` +
+    "so an older untouched Foundry copy can't be told from your own edits and shows as kept. " +
+    `${history === null ? 'Re-run' : 'Run git fetch --unshallow in the Foundry checkout and re-run, or re-run'} with --overwrite if those files are untouched.`
+  );
 }
 
 if (createClaude) plan.push({ rel: 'CLAUDE.md', action: 'create', from: 'CLAUDE.md' });

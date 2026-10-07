@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
   CONTEXT_LIMITS,
+  FOUNDRY_SECTION,
   evaluateContextBudgets,
   measureContextBudgets,
 } from '../scripts/check-context-budgets.js';
@@ -231,4 +232,28 @@ test('importing the checker never measures the checkout or exits', () => {
     { env: { ...process.env, CONTEXT_BUDGET_ROOT: missingRoot }, encoding: 'utf8' }
   );
   assert.equal(out, 'imported\n');
+});
+
+test("a project's AGENTS.md is measured by Foundry's marked section alone", () => {
+  const projectRules = 'Our own rule.\n'.repeat(1000);
+  const root = makeFixture({
+    agents: `${projectRules}\n${FOUNDRY_SECTION.start}\nFoundry rules\n${FOUNDRY_SECTION.end}\n${projectRules}`,
+  });
+  try {
+    assert.equal(measureContextBudgets(root).agentsBytes, 'Foundry rules\n'.length);
+    assert.equal(run(root, ['--check']).code, 0, "the project's own 28 KB of rules are not Foundry's to budget");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('damaged section markers fail the check with a plain reason instead of a guess', () => {
+  const root = makeFixture({ agents: `${FOUNDRY_SECTION.start}\nFoundry rules\n` });
+  try {
+    const result = run(root, ['--check']);
+    assert.equal(result.code, 1);
+    assert.ok(result.out.includes("AGENTS.md has 1 start and 0 end line(s) for Foundry's section"), result.out);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

@@ -215,7 +215,7 @@ Each slice updates the tests it changes the meaning of, and ends with `npm run c
 Frame-it is done: both answers are folded in above. The human types `/solo`, and solo runs the stages below in order. Security-scan applies, because the installer reads and writes files in a project it doesn't own, which counts as outside input. The run ends with nothing carried over. Handoff merges the pull request under solo's limits, and its next-session half says there is nothing left.
 
 - [x] challenge-plan 1 through 5 (plus extra rounds 6 to 8; stopped at the round-8 cap)
-- [ ] build-it
+- [x] build-it
 - [ ] test-it
 - [ ] security-scan
 - [ ] challenge-implementation 1 through 5
