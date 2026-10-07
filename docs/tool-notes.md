@@ -4,7 +4,7 @@ Foundry's commands are plain markdown and assume nothing tool-specific. This pag
 
 ## Claude Code
 
-Claude Code reads each command from `.claude/skills/<name>/SKILL.md`, a byte-identical copy of the skill file the generator writes, because Claude Code doesn't read `.agents/skills/`. A request for that was closed as a duplicate of earlier requests marked not planned (anthropics/claude-code issue 66352). The header's manual-only switch (`disable-model-invocation: true`) means Claude runs a stage only when you type it.
+Claude Code reads each command from `.claude/skills/<name>/SKILL.md`, a byte-identical copy of the skill file the generator writes, because Claude Code doesn't read `.agents/skills/`. The open request to add it is anthropics/claude-code issue 31005. It also asked for `AGENTS.md` support, and only that half shipped, in 2.1.277. When `.agents/skills/` support lands, the Claude copy can go. The header's manual-only switch (`disable-model-invocation: true`) means Claude runs a stage only when you type it.
 
 The shared rules come in through CLAUDE.md's one-line `@AGENTS.md` import. Since version 2.1.277 (September 2026) Claude Code can read `AGENTS.md` on its own when a project has no `CLAUDE.md`, but Foundry keeps the import. Anthropic's own docs recommend it for sessions that can't load `AGENTS.md`, and older versions need it. Two cases quietly switch that fallback off, even with the import kept elsewhere: a CLAUDE.local.md, or a `CLAUDE.md` in a folder above your project. Claude Code then reads that file instead of `AGENTS.md`, so give it the import line too.
 

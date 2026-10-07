@@ -17,9 +17,9 @@
 
 export const HEADER_KEYS = ['name', 'description', 'disable-model-invocation'];
 
-// The Agent Skills standard and Cursor both require this shape, and both
-// skip a skill that breaks it without saying so. 64 and 1024 are the
-// standard's limits, which Codex enforces the same way.
+// The Agent Skills standard and Cursor's skill docs both require this name
+// shape, and a tool may refuse to load a skill that breaks it. 64 and 1024
+// are the standard's limits; Codex's parser rejects a name over 64.
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_NAME = 64;
 const MAX_DESCRIPTION = 1024;
