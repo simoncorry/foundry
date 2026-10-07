@@ -1,6 +1,6 @@
 ---
 id: single-command-copy
-status: IN_PROGRESS
+status: SHIPPED
 created: 2026-10-07
 ---
 
