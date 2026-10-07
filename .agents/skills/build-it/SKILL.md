@@ -46,7 +46,7 @@ If implementation hits a wall the plan can't resolve and the conservative-option
 
 ## When implementation completes
 
-Say exactly: `Implementation complete.` and end the turn. Under a queued chain, test-it fires next on its own; interactively, the human invokes it. Do NOT auto-invoke the next command; each stage starts on the human's turn, always.
+Say exactly: `Implementation complete.` and end the turn. Under a queued chain, test-it fires next on its own; interactively, the human invokes it. Do NOT auto-invoke the next command; each stage starts on the human's turn, always (except under `/solo`, which runs the stages itself).
 
 ## Rationale (recorded so future edits don't drift it)
 

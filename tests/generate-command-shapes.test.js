@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,7 @@ const script = join(repoRoot, 'scripts', 'generate-command-shapes.js');
 function makeFixture() {
   const root = mkdtempSync(join(tmpdir(), 'foundry-shapes-'));
   mkdirSync(join(root, '.agents', 'skills'), { recursive: true });
+  writeFileSync(join(root, 'package.json'), '{ "name": "foundry" }\n');
   return root;
 }
 
@@ -47,7 +48,8 @@ function snapshot(root) {
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
+      if (entry.isSymbolicLink()) files[full.slice(root.length)] = '(link)';
+      else if (entry.isDirectory()) walk(full);
       else files[full.slice(root.length)] = readFileSync(full, 'utf8');
     }
   };
@@ -285,6 +287,92 @@ test('an invalid folder name, an empty body, and a folder with no SKILL.md each 
     assert.equal(r.code, 1);
     assert.ok(r.stdout.includes('.agents/skills/hollow/SKILL.md: missing'));
   });
+});
+
+test('outside a Foundry checkout it refuses in both modes and writes nothing', () => {
+  for (const pkg of [null, 'not json', 'null', '[]', '{}', '{ "name": "my-app" }\n', '{ "name": "Foundry" }\n']) {
+    withFixture((root) => {
+      if (pkg === null) rmSync(join(root, 'package.json'));
+      else writeFileSync(join(root, 'package.json'), pkg);
+      writeSource(root, 'their-skill', 'A project skill. Body.\n');
+      const before = snapshot(root);
+      for (const args of [[], ['--confirm']]) {
+        const r = run(root, args);
+        assert.equal(r.code, 1, `${pkg} ${args}`);
+        assert.ok(r.stdout.includes("[shapes] REFUSED: ") && r.stdout.includes('not Foundry\'s own checkout'), r.stdout);
+      }
+      assert.deepEqual(snapshot(root), before);
+    });
+  }
+});
+
+test('a linked skill folder is refused cleanly, whether or not its target exists', () => {
+  for (const dangling of [true, false]) {
+    withFixture((root) => {
+      const outside = mkdtempSync(join(tmpdir(), 'foundry-shapes-outside-'));
+      try {
+        writeSource(root, 'alpha', 'Real skill. Body.\n');
+        const target = join(outside, 'linked');
+        if (!dangling) {
+          mkdirSync(target);
+          writeFileSync(join(target, 'SKILL.md'), 'Linked skill. Body.\n');
+        }
+        symlinkSync(target, join(root, '.agents', 'skills', 'linked'));
+        const before = { root: snapshot(root), outside: snapshot(outside) };
+        for (const args of [[], ['--confirm']]) {
+          const r = run(root, args);
+          assert.equal(r.code, 1, `dangling=${dangling} ${args}`);
+          assert.ok(r.stdout.includes('[shapes] INVALID: .agents/skills/linked: is a link'), r.stdout);
+          assert.ok(!r.stdout.includes('    at '), `no stack trace: ${r.stdout}`);
+        }
+        assert.deepEqual({ root: snapshot(root), outside: snapshot(outside) }, before);
+      } finally {
+        rmSync(outside, { recursive: true, force: true });
+      }
+    });
+  }
+});
+
+test('a link deeper on any write path is refused before anything is written through it', () => {
+  const cases = [
+    ['a linked agents folder inside a skill', '.agents/skills/alpha/agents', (root, outside) => {
+      writeSource(root, 'alpha', 'Real skill. Body.\n');
+      symlinkSync(outside, join(root, '.agents', 'skills', 'alpha', 'agents'));
+    }],
+    ['a linked skills folder', '.agents/skills', (root, outside) => {
+      mkdirSync(join(outside, 'alpha'));
+      writeFileSync(join(outside, 'alpha', 'SKILL.md'), 'Real skill. Body.\n');
+      rmSync(join(root, '.agents', 'skills'), { recursive: true });
+      symlinkSync(outside, join(root, '.agents', 'skills'));
+    }],
+    ['a linked Claude skills folder', '.claude/skills', (root, outside) => {
+      writeSource(root, 'alpha', 'Real skill. Body.\n');
+      mkdirSync(join(root, '.claude'));
+      symlinkSync(outside, join(root, '.claude', 'skills'));
+    }],
+    ['a linked SKILL.md', '.agents/skills/alpha/SKILL.md', (root, outside) => {
+      writeFileSync(join(outside, 'real.md'), 'Linked file. Body.\n');
+      mkdirSync(join(root, '.agents', 'skills', 'alpha'));
+      symlinkSync(join(outside, 'real.md'), sourcePath(root, 'alpha'));
+    }],
+  ];
+  for (const [label, linkPath, arrange] of cases) {
+    withFixture((root) => {
+      const outside = mkdtempSync(join(tmpdir(), 'foundry-shapes-outside-'));
+      try {
+        arrange(root, outside);
+        const before = { root: snapshot(root), outside: snapshot(outside) };
+        for (const [given, args] of [[root, []], [root, ['--confirm']], [`${root}/`, []]]) {
+          const r = run(given, args);
+          assert.equal(r.code, 1, `${label} ${given} ${args}`);
+          assert.ok(r.stdout.includes(`[shapes] INVALID: ${linkPath}: is a link`), `${label}: ${r.stdout}`);
+        }
+        assert.deepEqual({ root: snapshot(root), outside: snapshot(outside) }, before, label);
+      } finally {
+        rmSync(outside, { recursive: true, force: true });
+      }
+    });
+  }
 });
 
 test('the real repo tree is in sync and the old command folders are gone', () => {

@@ -4,7 +4,7 @@
 
 This file is the shared ground rules for any agent working in a project that uses Foundry. Cursor and Codex read it natively. Claude Code reads it through the one-line import in CLAUDE.md. If your tool reads none of these, paste this file into the chat at the start of a session.
 
-Foundry is an agent process: named stages you run in order, each one a markdown command in this repo. The chain is start-up, construct-the-plan, frame-it, challenge-plan 1 through 5, build-it, test-it, security-scan, challenge-implementation 1 through 5, wrap-up, handoff, with quiz available at any point. You don't have to run all of it every time; see the light path in docs/light-path.md.
+Foundry is an agent process: named stages you run in order, each one a markdown command in this repo. The chain is start-up, construct-the-plan, frame-it, challenge-plan 1 through 5, build-it, test-it, security-scan, challenge-implementation 1 through 5, wrap-up, handoff, with quiz available at any point and solo to hand the rest of the chain to the agent. You don't have to run all of it every time; see the light path in docs/light-path.md.
 
 ## What the chain assumes
 
@@ -47,7 +47,7 @@ Every round states its angle at the top and must differ from all prior rounds. W
 
 ## The flow guarantee
 
-Once build-it starts, the chain runs without questions to the human until handoff completes. Frame-it is the one designed question stop, and it runs before the chain, while the human is present. Mid-chain edge cases auto-resolve with the conservative option and a logged note (the plan file's Deviations section), never a blocking question. If a blocking question dialog times out or answers itself, treat that as HALT, never as consent.
+Once build-it starts, the chain runs without questions to the human until handoff completes. Frame-it is the one designed question stop, and it runs before the chain, while the human is present. Mid-chain edge cases auto-resolve with the conservative option and a logged note (the plan file's Deviations section), never a blocking question. If a blocking question dialog times out or answers itself, treat that as HALT, never as consent. Invoking `/solo` makes the agent run every remaining stage itself, answer frame-it with its own recommendations, and never ask; its file lists the limits it keeps.
 
 ## The background-work barrier
 

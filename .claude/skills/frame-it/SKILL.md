@@ -59,7 +59,7 @@ Then stop. Do not run challenge rounds. Do not start building.
 
 ## Boundaries
 
-- **Interactive-only.** `/frame-it` never runs inside an unattended chain or any automation. It exists precisely because the human is present.
+- **Interactive-only.** `/frame-it` never runs inside an unattended chain or any automation, except under `/solo`, where the agent answers its own questions with its recommendations. It exists precisely because the human is present.
 - **Ad-hoc suggestion rule.** Outside the standard flow, when a request is ambiguous enough that you would otherwise ask 3 or more scattered clarifying questions, suggest `/frame-it` by name instead of asking them piecemeal.
 
 ## Rationale (recorded so future edits don't drift it)
