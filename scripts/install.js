@@ -110,7 +110,7 @@ function collectFiles(root, rel, found) {
 }
 
 // Every write must land inside the target. A symlink anywhere on the way
-// (a linked folder, a linked file, a dangling link) would otherwise let the
+// (a linked folder, a linked file, a link to nothing) would otherwise let the
 // copy overwrite or create files elsewhere on the machine. Checks the
 // deepest part of the path that already exists; anything not yet created
 // is made fresh under it.

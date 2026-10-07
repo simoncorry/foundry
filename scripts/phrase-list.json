@@ -382,5 +382,21 @@
  {
   "bad": "TOCTOU",
   "good": "a race between a check and the write it guards"
+ },
+ {
+  "bad": "dangling link",
+  "good": "a link that points at nothing"
+ },
+ {
+  "bad": "home check",
+  "good": "the check that it is running in Foundry's own folder"
+ },
+ {
+  "bad": "steer mode",
+  "good": "the Cursor setting that delivers a message while the agent is still working"
+ },
+ {
+  "bad": "test bites",
+  "good": "the test fails when the code is wrong"
  }
 ]

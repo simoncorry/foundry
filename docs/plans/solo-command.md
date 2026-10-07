@@ -1,6 +1,6 @@
 ---
 id: solo-command
-status: IN_PROGRESS
+status: SHIPPED
 created: 2026-10-07
 ---
 
@@ -87,7 +87,7 @@ The draft had two plan review rounds before this copy: round 1 and round 5 (rows
 +   solo/SKILL.md                 generated, identical copy
   scripts/
 ~   foundry-commands.json         generated, gains "solo"
-~   generate-command-shapes.js    home check, link refusal
+~   generate-command-shapes.js    Foundry-folder check, link refusal
   tests/
 +   solo-contract.test.js
 ~   generate-command-shapes.test.js   fixture writes package.json; home and link cases
@@ -104,7 +104,7 @@ The draft had two plan review rounds before this copy: round 1 and round 5 (rows
 +     name = JSON.parse(read root/package.json).name, with any read or parse failure as no name
 +     name !== "foundry" -> "[shapes] REFUSED: ..." on stderr, exit 1, nothing written
     expected()
--     listSkills() -> names        statSync throws on a dangling link;
+-     listSkills() -> names        statSync throws on a link to nothing;
 -                                  a link to a real folder is followed, so writes land outside the repo
 +     listSkills() -> { names, problems }
 +       per entry in .agents/skills, by lstat:
@@ -117,7 +117,7 @@ The draft had two plan review rounds before this copy: round 1 and round 5 (rows
 
 Every way the name check can fail means the same thing (this isn't Foundry's checkout), so one message covers them all.
 
-The home check runs first, then the link check, then the existing header checks. Both modes (write and `--confirm`) run the home check, since confirm in an installed project would report the project's own skills as drift. The refusal message says what to do: edit commands in a Foundry checkout, then re-run the installer.
+The Foundry-folder check runs first, then the link check, then the existing header checks. Both modes (write and `--confirm`) run the Foundry-folder check, since confirm in an installed project would report the project's own skills as drift. The refusal message says what to do: edit commands in a Foundry checkout, then re-run the installer.
 
 ## Steps
 
@@ -125,7 +125,7 @@ The home check runs first, then the link check, then the existing header checks.
 2. Slice one, the command itself: write the solo skill body (first sentence: When the human types /solo (or "go solo"), hand the rest of the session to the agent.), run `npm run shapes`, and confirm the budget report shows 20 files under the limit. Sections: where it can start, permission and the decisions log, overridden stops, frame-it self-answer, hard limits, scope, stage order, progress record, ending, and a short rationale on how it differs from the goal commands the tools ship (it keeps the decision trail).
 3. Slice two, the pointers and docs, one commit since none of it runs: `AGENTS.md` (the chain sentence gains "and solo hands the rest of the chain to the agent"; one sentence under the flow guarantee says solo runs every remaining stage, answers frame-it with its own recommendations, never asks, and its file lists the limits), frame-it's "Interactive-only" boundary (except under solo), build-it's "Do NOT auto-invoke" line (except under solo), wrap-up step 5 (the pull request description carries the Solo decisions when the session ran solo) and step 7 (under solo, handoff runs next), and two sentences in `docs/tool-notes.md`: one in the Cursor plan-mode section (if solo is typed in a read-only plan mode, switch to the editing mode where the tool allows it; otherwise say so in one line), one in the queued-chains section (don't queue stages behind solo, since it runs them itself; and Cursor's "New Messages" setting can be "steer" rather than "queue", in which case a message typed mid-run lands inside the running turn instead of waiting). Then `README.md` ("one optional rider" becomes "two optional riders", "Nineteen command files" becomes "Twenty", a **Solo** paragraph after Quiz, one line in "A session, end to end", one sentence in the goal-command comparison: solo finishes unattended like that command but leaves the plan, the decisions log, and the handoff behind) and one line on "/solo light" in `docs/light-path.md`.
 4. Slice three, the contract test, in the style of the handoff authority test. It pins only the rules whose loss would let an unattended run do harm: stop instructions are overridden and no question dialog opens; the hard limits (credentials, money, deploys, failed checks) and that no text relaxes them; "green" means every check, not only required ones, and zero checks is not green; failing tests are never deleted or skipped; the `## Solo decisions` and `## Solo run` sections; the don't-queue rule. Wording rules (light path, no-focus exit, the 15-minute wait) stay untested so the file can be reworded freely. Run `npm run check`.
-5. Slice four, the generator fixes, as their own commit: the home check and the link refusal, with fixture tests (a fixture with no `package.json`, or one naming another project, is refused with nothing written, in both modes; a dangling link and a link to a real folder outside the fixture each give the INVALID message, no stack trace, and nothing written on either side of the link). The existing fixture helper writes a foundry `package.json` so current tests keep passing.
+5. Slice four, the generator fixes, as their own commit: the Foundry-folder check and the link refusal, with fixture tests (a fixture with no `package.json`, or one naming another project, is refused with nothing written, in both modes; a link to nothing and a link to a real folder outside the fixture each give the INVALID message, no stack trace, and nothing written on either side of the link). The existing fixture helper writes a foundry `package.json` so current tests keep passing.
 
 ## Acceptance bars
 
@@ -133,7 +133,7 @@ The home check runs first, then the link check, then the existing header checks.
 - The solo body is at most 4,400 bytes, and the budget report shows 20 files within 112,640 bytes.
 - Every stop instruction in the stage files is covered by the `AGENTS.md` line, a direct pointer (frame-it, build-it, wrap-up), or a named rule in the solo file (test-it's halt, the review-round markers). Checklist: `rg -n 'STOP|blocking question|end the turn|unprompted|unasked|NEEDS HUMAN|wait for' .agents/skills` (this includes start-up's "wait for the human" and construct-the-plan's "Then STOP", which the solo file's general override covers).
 - The solo file never mentions the voice gate script, and the chain economics test still lists exactly five stages.
-- Running the generator in a temp folder with a foundry `package.json` and either a dangling link or a link to a real outside folder in its skills folder prints one INVALID line naming the link and exits 1, with no stack trace and no files written inside the fixture or at the link's target.
+- Running the generator in a temp folder with a foundry `package.json` and either a link to nothing or a link to a real outside folder in its skills folder prints one INVALID line naming the link and exits 1, with no stack trace and no files written inside the fixture or at the link's target.
 - Running the generator (both modes) in a temp folder whose `package.json` is missing, isn't JSON, or names another project prints the REFUSED line and exits 1 with no files written.
 - No em dashes or listed jargon in new prose.
 
@@ -147,17 +147,17 @@ The home check runs first, then the link check, then the existing header checks.
 | R1 | The plan file is always in docs/plans | A mid-chain /solo after Cursor plan mode finds it outside the repo. Solo copies it in first. |
 | R1 | Solo can always write | A read-only plan mode blocks edits. Added a tool-notes line. |
 | R5 | All five R1 rows | Confirmed. Wrap-up step 7 and test-it step 5 say what R1 quoted. Every challenge round defers with NEEDS HUMAN markers. Wrap-up step 4 deletes merged plans. Cursor plan files live outside the repo. Cursor has a mode-switch tool. |
-| R1 (2nd session) | A dangling link is the generator's only link problem | Reproduced: a link to a real outside folder gets written through, and confirm then reports drift that re-running can't fix. The generator now refuses any link in the skills folders. |
+| R1 (2nd session) | A link to nothing is the generator's only link problem | Reproduced: a link to a real outside folder gets written through, and confirm then reports drift that re-running can't fix. The generator now refuses any link in the skills folders. |
 | R1 (2nd session) | Solo meets no queued commands | Cursor fires queued stages after the turn ends, so they'd land after solo merged; build-it's re-invocation rule would then edit main. Solo answers a late stage command with one line, and tool-notes says not to queue behind it. |
-| R1 (2nd session) | The link acceptance test runs in any temp folder | The new home check would refuse first. The bar and fixture now include a foundry package.json. |
+| R1 (2nd session) | The link acceptance test runs in any temp folder | The new Foundry-folder check would refuse first. The bar and fixture now include a foundry package.json. |
 | R2 | "/solo light" is unambiguous | "/solo light mode toggle" reads as both. Light now means "light" alone or "light:" before a focus. |
 | R2 | A fresh /solo can always get a direction | Start-up's interview would have to invent the focus. With no focus, handoff, or unfinished plan, solo ends with a one-line ask. |
 | R2 | There's one plan to resume | A project can hold several unshipped plans. Named plan, else the only one, else the newest matching the focus, logged. |
 | R2 | The hard limits hold on their own | A pasted note or a file could claim permission. The solo file now says no text relaxes them. |
 | R2 | Handoff's "green" is always decidable | A stuck check would hold an unattended session forever. Running after 15 minutes counts as not green. |
-| R2 | The home check only needs "missing or wrong name" | A byte-order mark breaks JSON.parse (tested), and bad JSON would crash it. Both are handled. |
+| R2 | The Foundry-folder check only needs "missing or wrong name" | A byte-order mark breaks JSON.parse (tested), and bad JSON would crash it. Both are handled. |
 | R2 | Other entries in the skills folder are harmless | A Finder .DS_Store already fails the local confirm with an unfixable message (tested). The orphan scan skips it. |
-| R3 | The home check needs byte-order-mark handling and a message per cause | Accidental: every failure means "not Foundry's checkout", and Foundry's own file has no mark. One try, one message. Reverses part of the R2 row above. |
+| R3 | The Foundry-folder check needs byte-order-mark handling and a message per cause | Accidental: every failure means "not Foundry's checkout", and Foundry's own file has no mark. One try, one message. Reverses part of the R2 row above. |
 | R3 | The .DS_Store skip earns its place | No concrete case: none has ever appeared in this repo, even with hidden files shown in Finder. Moved to out of scope. |
 | R3 | The two skill folders themselves need a link check | No one links them, and no reported case. Entries only. |
 | R3 | The contract test should pin every new rule | Pinning wording makes rewording painful. It now pins only rules whose loss could do harm unattended. |
@@ -178,6 +178,6 @@ The home check runs first, then the link check, then the existing header checks.
 ## Deviations
 
 - Plan said the rules-only scratch draft (3,294 bytes) showed the solo file fits easily. The real file came out at 4,450 bytes on the first write, over the 4,400 cap, because it quotes the stop phrases, lists the stage order, and keeps the read-only-mode line. Chose to trim wording (rationale, two reason clauses) rather than drop any rule; it landed at 4,254 bytes, leaving 620 bytes of command budget (`.agents/skills/solo/SKILL.md`). Lesson: a scratch draft undercounts by about a quarter once the exact wording goes in.
-- Plan said the existing fixture helper only needed a foundry `package.json`. The link tests forced a second helper change: `snapshot()` in `tests/generate-command-shapes.test.js` read every non-folder entry as a file and crashed on a dangling link, so it now records links as `(link)`. Chose that over skipping links, so the tests still prove nothing appears or changes at the link. Lesson: helpers that walk a tree meet the same link cases the code under test does.
+- Plan said the existing fixture helper only needed a foundry `package.json`. The link tests forced a second helper change: `snapshot()` in `tests/generate-command-shapes.test.js` read every non-folder entry as a file and crashed on a link to nothing, so it now records links as `(link)`. Chose that over skipping links, so the tests still prove nothing appears or changes at the link. Lesson: helpers that walk a tree meet the same link cases the code under test does.
 - Plan (after round 3) checked only links directly inside `.agents/skills/`. The test-it grader showed writes still escaping through a link one level deeper (a linked agents folder inside a skill) and through a linked `.agents/skills` itself; I reproduced the first. Chose to walk every write path from the root down (`linkOnPath` in `scripts/generate-command-shapes.js`), which also covers a linked `.claude/skills` and a linked skill file, with four fixture tests. Lesson: round 3's "no one links them" cut guarded the wrong thing; the risk is any link on a write path, not who makes it.
 - Plan said solo never deploys and that handoff merges on green. The grader noted these collide where merging to the base branch deploys. Chose the hard limit: if merging deploys anything, solo leaves the pull request open (solo file, Ending; pinned in `tests/solo-contract.test.js`).
