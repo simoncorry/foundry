@@ -11,6 +11,8 @@ The light path is the lower-assurance shape. It asks for fewer review rounds, so
 5. **challenge-implementation twice**, not five times.
 6. **wrap-up** and **handoff** as normal.
 
+To hand this shape to the agent, type `/solo light` (or `/solo light:` and the focus); it runs the steps above without asking.
+
 When to spend on the full chain instead: work you'll live with for months, work that touches money or user data, work where being subtly wrong is expensive. The extra rounds exist because "done" and "right" aren't the same thing. In the source project's measured runs, later rounds and independent graders still found consequential defects. [Chain economics](wiki/engineering/chain-economics.md) carries the evidence and its limits.
 
 Smaller models: the chain is plain instructions, so any capable model can follow it. Expect the challenge rounds to catch less per round; compensate with the angles that need the least cleverness (the sequence of steps, hostile inputs, config syntax) rather than more rounds.

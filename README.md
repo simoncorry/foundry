@@ -8,7 +8,7 @@ Your coding tool (Cursor, Claude Code, Codex, whatever) is the harness: the thin
 
 ## The chain
 
-Ten stages plus one optional rider, each a plain markdown command the agent reads. Nineteen command files in total, because two of the stages run as five rounds each.
+Ten stages plus two optional riders, each a plain markdown command the agent reads. Twenty command files in total, because two of the stages run as five rounds each.
 
 **Start up** reads the ground before any work: the branch, the working tree, the note the last session left behind, and the sessions log. In design terms, re-reading the brief before the kickoff.
 
@@ -32,6 +32,8 @@ Ten stages plus one optional rider, each a plain markdown command the agent read
 
 **Quiz** is the rider, opt-in at any point: it quizzes you on a change that just shipped and teaches through the grading, so you actually understand what you merged. This will keep you honest so you learn as you build. If you don't have an engineering background I HIGHLY recommend you do this after every session.
 
+**Solo** is the other rider: type it at any point and the agent runs every remaining stage itself, through to the handoff. Where a stage would ask you something, it makes the call, writes it down in the plan, and copies the list into the pull request so you can overrule anything afterward. It still never spends money, deploys, or merges past a failing check. Add `light` for the two-round shape.
+
 ## The design process, mirrored
 
 The Double Diamond (British Design Council, 2005) splits work into understanding the problem and building the thing right. The chain's first half (start up, construct the plan, frame it, the plan challenges) is the first diamond. The chain's second half (build it, test it, security scan, the implementation challenges, wrap up and hand off) represents the second diamond.
@@ -47,6 +49,8 @@ The tools already ship commands that look like they cover this ground. Claude Co
 But look at what it's for: getting a machine to "done" with you out of the room. It optimizes for finishing, not for being right, and not for you understanding what happened along the way. The reasoning is a black box, you can't shape it as it runs, and when the terminal closes most of the context is lost. That's a fair trade for a weekend prototype. It's the wrong trade for something you mean to keep.
 
 Foundry's bet is the opposite. Every stage is a checkpoint with a name and a job, and you're in the loop where your expertise matters: you approve the plan, frame it has the agent brief you and ask before anything gets built, the challenge rounds tell you what they found, the wrap up explains in plain English what changed. And the chain leaves a trail: the rules file, the plan, the session notes, the handoff note. That trail is the part that lasts, the thing that lets the next session, or the next person, pick up the soul of the project and not just its code.
+
+Foundry's own `/solo` finishes unattended the same way, but it leaves the plan, the log of every call it made, and the handoff behind.
 
 So this isn't "mine beats theirs." If the work is throwaway, reach for `/goal`. It's faster and I mean that. Foundry earns its weight on projects meant to live on, where the working relationship between you and the agent is a real asset. One honest caveat: these platforms already let you write custom commands, so Foundry isn't a trick they can't do. It's a considered set of them that I use every day, plus the habits and the memory around them, so nobody has to repeat the months of trial and error it took to get here.
 
@@ -69,7 +73,7 @@ What you actually type. Each stage is a slash command (the skill's folder name b
 1. **start-up**, then describe what you want built.
 2. **construct-the-plan**, and read the narrative half it writes for you.
 3. **frame-it**, and answer its three to five questions. This is your last required moment at the keyboard.
-4. Queue **challenge-plan** rounds one through five, **build-it**, **test-it**, **challenge-implementation** rounds one through five, and **wrap-up**. Walk away; every stage after frame-it runs unattended.
+4. Queue **challenge-plan** rounds one through five, **build-it**, **test-it**, **challenge-implementation** rounds one through five, and **wrap-up**. Walk away; every stage after frame-it runs unattended. Or type **solo** at any point and the agent runs the rest itself, frame-it included.
 5. Come back to one pull request and a plain-English summary of what you now have. **handoff** when you want a bridge to next time. Invoking it also authorizes the agent to merge a ready pull request from that work, or close it without merging when it should not ship. Use **quiz** when you want to be tested on what shipped.
 
 ## Getting started

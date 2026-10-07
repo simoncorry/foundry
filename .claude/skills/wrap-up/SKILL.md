@@ -38,7 +38,7 @@ Then the memory, in three moves:
 
 ## Step 5: Commit, push, open the pull request
 
-Commit remaining work with messages that explain why, push the feature branch, and open ONE pull request whose description follows the same two-part shape as everything else: a plain-prose paragraph of what and why, then a terse accurate change list. Merge behavior (auto-merge, review-first, straight merge) is the project's policy, not this command's; follow what the repo's AGENTS.md says. No-git mode: write the change summary to a dated file instead and tell the human where it is.
+Commit remaining work with messages that explain why, push the feature branch, and open ONE pull request whose description follows the same two-part shape as everything else: a plain-prose paragraph of what and why, then a terse accurate change list, plus the plan's Solo decisions when the session ran solo. Merge behavior (auto-merge, review-first, straight merge) is the project's policy, not this command's; follow what the repo's AGENTS.md says. No-git mode: write the change summary to a dated file instead and tell the human where it is.
 
 ## Step 6: Close with the summary the human actually reads
 
@@ -46,7 +46,7 @@ At most two short paragraphs of prose, no bullets, no labels. The first says wha
 
 ## Step 7: Stop
 
-Wrap-up ends the session's work. If the human wants a bridge to next time, they invoke handoff; don't emit one unasked.
+Wrap-up ends the session's work. If the human wants a bridge to next time, they invoke handoff; don't emit one unasked (under `/solo`, handoff runs next).
 
 ## Rationale (recorded so future edits don't drift it)
 

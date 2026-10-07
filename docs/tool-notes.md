@@ -20,7 +20,7 @@ Cursor also loads `.claude/skills/` for compatibility, so it sees each skill twi
 
 ## Cursor: plan mode
 
-Cursor has a plan mode that drafts plans in a workspace folder outside your repo. Foundry's construct-the-plan command writes plans straight into `docs/plans/` instead, so nothing here depends on plan mode existing. If you use plan mode anyway, move the result into `docs/plans/<slug>.md` before building, so the plan lives in git next to the work.
+Cursor has a plan mode that drafts plans in a workspace folder outside your repo. Foundry's construct-the-plan command writes plans straight into `docs/plans/` instead, so nothing here depends on plan mode existing. If you use plan mode anyway, move the result into `docs/plans/<slug>.md` before building, so the plan lives in git next to the work. If you type `/solo` while plan mode is on, the agent switches to its editing mode where Cursor allows it; where it can't, it says so in one line, since that mode is your setting.
 
 ## Cursor: blocking questions and the timeout bug
 
@@ -36,4 +36,4 @@ Cursor can inject session-start context via hooks, but injection has a confirmed
 
 ## Cursor: queued chains
 
-Cursor processes queued messages when the current turn ends, which is what lets you queue the whole chain (`/challenge-plan-2` through `/handoff`) and walk away. Two disciplines make that safe: never end a turn while something the next command depends on is still pending, and use a blocking question (not a printed refusal) when the chain must stop, so the queue halts at the failure point instead of firing every remaining command into a dead state.
+Cursor processes queued messages when the current turn ends, which is what lets you queue the whole chain (`/challenge-plan-2` through `/handoff`) and walk away. Two disciplines make that safe: never end a turn while something the next command depends on is still pending, and use a blocking question (not a printed refusal) when the chain must stop, so the queue halts at the failure point instead of firing every remaining command into a dead state. Don't queue stages behind `/solo`; it runs them itself, and a stage command that reaches it gets a one-line reply. Cursor's "New Messages" setting (Settings, Agents, Conversation) can also be set to steer instead of queue, which delivers a message typed mid-run at the agent's next tool call rather than after the turn.
