@@ -34,6 +34,7 @@ test('solo merges only when every check passed', () => {
 
   assert.match(solo, /every check on the pull request's head commit passed or was skipped \(not only required ones\)/);
   assert.match(solo, /Zero checks counts as still waiting/);
+  assert.match(solo, /If merging deploys anything .*the merge is a deploy: leave it open/);
 });
 
 test('solo leaves a record and refuses stray stage commands', () => {
