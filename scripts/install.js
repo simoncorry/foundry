@@ -172,19 +172,14 @@ if (createClaude) created.push('CLAUDE.md');
 const claudeMissesImport =
   !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
 
-const commandNames = new Set(
-  readdirSync(join(foundryRoot, '.agents', 'skills'), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-);
+const commandNames = new Set(JSON.parse(readFileSync(join(foundryRoot, 'scripts', 'foundry-commands.json'), 'utf8')));
 const removed = [];
 for (const dir of OLD_COMMAND_DIRS) {
   if (!existsSync(join(target, dir)) || !statSync(join(target, dir)).isDirectory()) continue;
   // A commands folder that resolves outside the target (a symlink, or a
   // symlinked parent) holds someone else's files; never delete there.
-  const realDir = realpathSync(join(target, dir));
-  if (!realDir.startsWith(realpathSync(target) + sep)) {
-    console.log(`  skip ${dir}: it resolves outside the project (${realDir}), so nothing there is removed`);
+  if (!landsInside(join(target, dir))) {
+    console.log(`  skip ${dir}: it resolves outside the project, so nothing there is removed`);
     continue;
   }
   for (const entry of readdirSync(join(target, dir), { withFileTypes: true })) {

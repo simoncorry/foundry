@@ -30,8 +30,14 @@ function makeFixture({ agents = 'rules\n', commands = { alpha: 'command\n' } } =
       mkdirSync(join(root, '.agents', 'skills', name), { recursive: true });
       writeFileSync(skillFile(root, name), body);
     }
+    writeList(root, Object.keys(commands));
   }
   return root;
+}
+
+function writeList(root, names) {
+  mkdirSync(join(root, 'scripts'), { recursive: true });
+  writeFileSync(join(root, 'scripts', 'foundry-commands.json'), `${JSON.stringify(names)}\n`);
 }
 
 function run(root, args = []) {
@@ -80,8 +86,7 @@ test("with Foundry's command list present, only listed skills count, so a projec
   const root = makeFixture({ commands: { 'build-it': '1234', 'their-own': 'x'.repeat(500) } });
   mkdirSync(join(root, '.agents', 'skills', 'shipping', 'land-it'), { recursive: true });
   writeFileSync(join(root, '.agents', 'skills', 'shipping', 'land-it', 'SKILL.md'), 'nested\n');
-  mkdirSync(join(root, 'scripts'));
-  writeFileSync(join(root, 'scripts', 'foundry-commands.json'), '["build-it"]\n');
+  writeList(root, ['build-it']);
   try {
     const measurement = measureContextBudgets(root);
     assert.deepEqual(measurement.commandFiles, [{ path: '.agents/skills/build-it/SKILL.md', bytes: 4 }]);
@@ -93,7 +98,6 @@ test("with Foundry's command list present, only listed skills count, so a projec
 
 test('a damaged command list, or a listed command with no skill file, fails loudly', () => {
   const root = makeFixture();
-  mkdirSync(join(root, 'scripts'));
   const list = join(root, 'scripts', 'foundry-commands.json');
   try {
     writeFileSync(list, '["alpha",');
@@ -142,15 +146,15 @@ test('normalizes CRLF and lone CR before measuring', () => {
   }
 });
 
-test('refuses missing AGENTS.md, a missing command directory, and an empty command directory', () => {
+test('refuses missing AGENTS.md, a missing command list, and an empty one', () => {
   const missingAgents = makeFixture();
   const missingCommands = makeFixture({ commands: null });
   const emptyCommands = makeFixture({ commands: {} });
   rmSync(join(missingAgents, 'AGENTS.md'));
   try {
     assert.throws(() => measureContextBudgets(missingAgents), /AGENTS\.md could not be read/);
-    assert.throws(() => measureContextBudgets(missingCommands), /source command directory could not be read/);
-    assert.throws(() => measureContextBudgets(emptyCommands), /contains no markdown commands/);
+    assert.throws(() => measureContextBudgets(missingCommands), /scripts\/foundry-commands\.json could not be read \(ENOENT\)/);
+    assert.throws(() => measureContextBudgets(emptyCommands), /foundry-commands\.json lists no commands/);
   } finally {
     rmSync(missingAgents, { recursive: true, force: true });
     rmSync(missingCommands, { recursive: true, force: true });
@@ -176,6 +180,7 @@ test('counts symlinked skill folders instead of permitting a budget bypass', () 
   mkdirSync(target);
   writeFileSync(join(target, 'SKILL.md'), 'linked command\n');
   symlinkSync(target, join(root, '.agents', 'skills', 'linked'));
+  writeList(root, ['linked']);
   try {
     const measurement = measureContextBudgets(root);
     assert.equal(measurement.commandCount, 1);

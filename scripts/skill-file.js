@@ -15,7 +15,7 @@
 // The generator and the context-budget checker both split through here, so
 // they can never disagree about where the body starts.
 
-export const HEADER_KEYS = ['name', 'description', 'disable-model-invocation'];
+const HEADER_KEYS = ['name', 'description', 'disable-model-invocation'];
 
 // The Agent Skills standard and Cursor's skill docs both require this name
 // shape, and a tool may refuse to load a skill that breaks it. 64 and 1024
@@ -36,15 +36,16 @@ export function splitSkill(text) {
 }
 
 // The description is the body's first sentence; Codex and Cursor show it in
-// their skill lists. Emitted single-quoted: YAML's single-quoted style has
-// exactly one escape (a doubled quote), so backslashes and other punctuation
-// in a command's first line can't break the header parse.
+// their skill lists.
 export function firstSentence(body) {
   const firstLine = body.split(/\r?\n/).find((l) => l.trim().length > 0) ?? '';
   const match = firstLine.match(/^(.+?[.!?])(\s|$)/);
   return (match ? match[1] : firstLine).trim();
 }
 
+// YAML's single-quoted style has exactly one escape (a doubled quote), so
+// backslashes and other punctuation in a command's first line can't break
+// the header parse.
 function quote(value) {
   return `'${value.replace(/'/g, "''")}'`;
 }

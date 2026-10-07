@@ -7,10 +7,9 @@
 //
 // A project that installs Foundry keeps its own skills in .agents/skills/
 // too, so only the names in scripts/foundry-commands.json (written by the
-// generator, copied by the installer) are counted. Without that list, every
-// folder there counts, which is right for Foundry's own checkout.
+// generator, copied by the installer) are counted.
 
-import { readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { splitSkill } from './skill-file.js';
@@ -29,36 +28,21 @@ function readNormalized(path, label) {
   }
 }
 
-function commandNames(root, commandsDir) {
-  const listPath = join(root, 'scripts', 'foundry-commands.json');
-  let listText = null;
+function commandNames(root) {
+  const label = 'scripts/foundry-commands.json';
+  const text = readNormalized(join(root, 'scripts', 'foundry-commands.json'), label);
+  let names;
   try {
-    listText = readFileSync(listPath, 'utf8');
+    names = JSON.parse(text);
   } catch (error) {
-    if (error?.code !== 'ENOENT') {
-      throw new Error(`scripts/foundry-commands.json could not be read (${error?.code ?? error?.message})`);
-    }
+    throw new Error(`${label} is not valid JSON (${error.message})`);
   }
-  if (listText !== null) {
-    let names;
-    try {
-      names = JSON.parse(listText);
-    } catch (error) {
-      throw new Error(`scripts/foundry-commands.json is not valid JSON (${error.message})`);
-    }
-    if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+$/.test(name))) {
-      throw new Error('scripts/foundry-commands.json must be a list of command names');
-    }
-    return names;
+  // The pattern also keeps a listed name from climbing out of .agents/skills/.
+  if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+$/.test(name))) {
+    throw new Error(`${label} must be a list of command names`);
   }
-  let entries;
-  try {
-    entries = readdirSync(commandsDir, { withFileTypes: true });
-  } catch (error) {
-    const reason = error?.code ?? error?.message ?? 'unknown read error';
-    throw new Error(`source command directory could not be read (${reason})`);
-  }
-  return entries.filter((entry) => entry.isDirectory() || entry.isSymbolicLink()).map((entry) => entry.name);
+  if (names.length === 0) throw new Error(`${label} lists no commands`);
+  return names;
 }
 
 export function measureContextBudgets(rootDir) {
@@ -67,7 +51,7 @@ export function measureContextBudgets(rootDir) {
   const commandsDir = join(root, '.agents', 'skills');
   const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
 
-  const commandFiles = commandNames(root, commandsDir)
+  const commandFiles = commandNames(root)
     .map((name) => {
       const path = join(commandsDir, name, 'SKILL.md');
       const portablePath = relative(root, path).split(sep).join('/');
@@ -75,10 +59,6 @@ export function measureContextBudgets(rootDir) {
       return { path: portablePath, bytes: Buffer.byteLength(body, 'utf8') };
     })
     .sort((a, b) => b.bytes - a.bytes || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
-
-  if (commandFiles.length === 0) {
-    throw new Error('source command directory contains no markdown commands');
-  }
 
   return {
     agentsBytes,
