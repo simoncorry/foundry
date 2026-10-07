@@ -64,7 +64,7 @@ You don't have to run all of it every time. [The light path](docs/light-path.md)
 
 ## A session, end to end
 
-What you actually type. Each stage is a slash command (the filename becomes the command in Cursor and Claude Code):
+What you actually type. Each stage is a slash command (the skill's folder name becomes the command in Cursor and Claude Code):
 
 1. **start-up**, then describe what you want built.
 2. **construct-the-plan**, and read the narrative half it writes for you.
@@ -78,7 +78,7 @@ Two ways in.
 
 Starting fresh? Clone this repo and build your project inside it. The commands are already wired: Cursor and Claude Code pick them up the moment you open the folder, and Codex reads each one as a skill you invoke by hand.
 
-Have a project already? Copy the three tool folders (`.cursor/commands/`, `.claude/commands/`, `.agents/`), the two rules files (`AGENTS.md`, `CLAUDE.md`), and `scripts/` into it, plus `docs/wiki/` if you want the reference library. That's the whole install. Or let the installer do the same copy, run from this repo's root: `node scripts/install.js <your-project>` (add `--wiki` for the library, `--dry-run` to preview), and re-run it after pulling Foundry to refresh your copies; it reports created, updated, and unchanged. The commands are plain markdown and need nothing running on your machine; `scripts/` rides along because the commands lean on its voice gate, phrase list, log rotation, and context-budget report. Node is needed only at the moments you run those checks. The installer does not rewrite your package scripts. To enforce Foundry's context ceilings in a consumer project, add `node scripts/check-context-budgets.js --check` to that project's own complete check. The sessions log creates itself at your first wrap-up.
+Have a project already? Copy the two tool folders (`.agents/` and `.claude/skills/`), the two rules files (`AGENTS.md`, `CLAUDE.md`), and `scripts/` into it, plus `docs/wiki/` if you want the reference library. That's the whole install. If your project already has its own `CLAUDE.md`, keep it and add a line reading `@AGENTS.md` to it instead; Claude Code reads a `CLAUDE.md` in place of `AGENTS.md`, not alongside it. Or let the installer do the copy, run from this repo's root: `node scripts/install.js <your-project>` (add `--wiki` for the library, `--dry-run` to preview). It never overwrites your own `CLAUDE.md`, and it tells you when that file is missing the import. Re-run it after pulling Foundry to refresh your copies; it reports created, updated, removed, and unchanged. Upgrading from a Foundry install older than October 2026? Re-run the installer. It removes the old copies in Cursor's and Claude's commands folders that made every stage show up twice in Cursor, and it leaves your own commands there alone. The commands are plain markdown and need nothing running on your machine; `scripts/` rides along because the commands lean on its voice gate, phrase list, log rotation, and context-budget report. Node is needed only at the moments you run those checks. The installer does not rewrite your package scripts. To enforce Foundry's context ceilings in a consumer project, add `node scripts/check-context-budgets.js --check` to that project's own complete check. The sessions log creates itself at your first wrap-up.
 
 If your project keeps its own docs pointing at wiki pages in a local Foundry checkout instead of copying the library in, `scripts/check-wiki-pointers.js` re-verifies those pointers from your project's own check chain, so a page renamed here fails loudly there instead of rotting silently. Arguments and the surfaces format are in its header.
 
@@ -86,6 +86,6 @@ If your tool is something else entirely, the floor still holds: every command is
 
 ## If you edit anything
 
-`.cursor/commands/` is the source of truth. The Claude and Codex shapes are generated from it (`npm run shapes`), and `npm run check` fails if they've been edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push to main and on every pull request.
+Each command's source of truth is its skill file, `.agents/skills/<name>/SKILL.md`. Edit the instructions below its short header and run `npm run shapes`. That rebuilds the header from the folder name and first sentence, and refreshes the Claude Code copy and the Codex policy file. `npm run check` fails if a header goes stale or a generated copy is edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push to main and on every pull request.
 
 MIT licensed.
