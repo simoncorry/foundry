@@ -71,7 +71,7 @@ export function skillProblems(name, text) {
     problems.push(`folder name "${name}" must be lowercase letters, digits, and single hyphens, at most ${MAX_NAME} characters`);
   }
   const { header, body } = splitSkill(text);
-  if (/^---\r?\n/.test(body)) {
+  if (/^(?:[ \t]*\r?\n)*---\r?\n/.test(body)) {
     problems.push('the body still starts with a --- line after the header; remove the extra header instead of letting a second one stack on top');
   }
   if (header !== null) {

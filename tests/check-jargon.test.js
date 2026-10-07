@@ -26,7 +26,7 @@ function makeFixture(listContent) {
   const root = mkdtempSync(join(tmpdir(), 'jargon-fixture-'));
   mkdirSync(join(root, 'scripts'), { recursive: true });
   mkdirSync(join(root, 'docs'), { recursive: true });
-  mkdirSync(join(root, '.cursor', 'commands'), { recursive: true });
+  mkdirSync(join(root, '.agents', 'skills', 'thing'), { recursive: true });
   mkdirSync(join(root, 'tests'), { recursive: true });
   writeFileSync(
     join(root, 'scripts', 'phrase-list.json'),
@@ -58,11 +58,11 @@ test('a listed phrase in doc prose fails with file, line, and rewrite', () => {
 
 test('a listed phrase in a command file fails', () => {
   const root = makeFixture();
-  writeFileSync(join(root, '.cursor', 'commands', 'thing.md'), 'Step one: zorbly flux.\n');
+  writeFileSync(join(root, '.agents', 'skills', 'thing', 'SKILL.md'), 'Step one: zorbly flux.\n');
   const r = run(root);
   rmSync(root, { recursive: true, force: true });
   assert.equal(r.code, 1);
-  assert.ok(r.out.includes('.cursor/commands/thing.md:1'));
+  assert.ok(r.out.includes('.agents/skills/thing/SKILL.md:1'));
 });
 
 test('matching is case-insensitive', () => {
@@ -223,7 +223,7 @@ test('the shipped phrase list guards the em dash', () => {
 // push with nobody warned. The sentence lives in the command source; the
 // shapes confirm carries it to the generated copies.
 test('the wrap-up growth step invokes the gate after appending', () => {
-  const wrapUp = readFileSync(join(repoRoot, '.cursor', 'commands', 'wrap-up.md'), 'utf8');
+  const wrapUp = readFileSync(join(repoRoot, '.agents', 'skills', 'wrap-up', 'SKILL.md'), 'utf8');
   const step3 = wrapUp.split(/^## /m).find((s) => s.startsWith('Step 3'));
   assert.ok(step3, 'wrap-up.md must keep a Step 3 section');
   assert.ok(step3.includes('node scripts/check-jargon.js'), 'Step 3 must run the blocking gate after appending');

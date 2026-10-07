@@ -11,7 +11,7 @@ function read(relativePath) {
 }
 
 test('handoff explicitly authorizes resolving its own pull requests', () => {
-  const command = read('.cursor/commands/handoff.md');
+  const command = read('.agents/skills/handoff/SKILL.md');
   const agreement = read('AGENTS.md');
   const readme = read('README.md');
 

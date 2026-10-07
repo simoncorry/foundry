@@ -24,7 +24,7 @@ function run(rootOverride) {
 // A minimal healthy tree the failure cases then poke holes in.
 function makeFixture() {
   const root = mkdtempSync(join(tmpdir(), 'links-fixture-'));
-  mkdirSync(join(root, '.cursor', 'commands'), { recursive: true });
+  mkdirSync(join(root, '.agents', 'skills', 'frame-it'), { recursive: true });
   mkdirSync(join(root, 'docs', 'plans'), { recursive: true });
   mkdirSync(join(root, 'scripts'), { recursive: true });
   writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'x' } }));
@@ -32,7 +32,7 @@ function makeFixture() {
   writeFileSync(join(root, 'CLAUDE.md'), '@AGENTS.md\n');
   writeFileSync(join(root, 'README.md'), '# Fixture\n\nSee AGENTS.md § Voice.\n');
   writeFileSync(join(root, 'scripts', 'real.js'), '// present\n');
-  writeFileSync(join(root, '.cursor', 'commands', 'frame-it.md'), 'The frame-it command.\n');
+  writeFileSync(join(root, '.agents', 'skills', 'frame-it', 'SKILL.md'), 'The frame-it command.\n');
   writeFileSync(join(root, 'docs', 'plans', 'README.md'), '# Plans\n\nShape per AGENTS.md § Plans.\n');
   return root;
 }
