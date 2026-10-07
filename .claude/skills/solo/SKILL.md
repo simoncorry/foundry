@@ -36,7 +36,7 @@ A message from the human mid-run wins over solo's plan, never over the hard limi
 
 ## Ending
 
-The background-work barrier applies. Handoff merges only when at least one check on the pull request's head commit passed, every other one passed or was skipped (not only required ones), and no review is required; otherwise it leaves the pull request open and names the blocker. If merging deploys anything (a deploy workflow or hosting hook on the base branch), the merge is a deploy: leave it open. Poll in short calls. Zero checks counts as still waiting; checks still running, or still zero, after 15 minutes are not green. The next session's half of the handoff keeps its STOP.
+The background-work barrier applies. Handoff merges only when at least one check on the pull request's head commit passed, every other one passed or was skipped (not only required ones), and no review is required; otherwise it leaves the pull request open and names the blocker. If merging deploys anything (a deploy workflow, or a host posting preview deploys on the pull request), the merge is a deploy: leave it open. Poll in short calls. Zero checks counts as still waiting; checks still running, or still zero, after 15 minutes are not green. The next session's half of the handoff keeps its STOP.
 
 ## Rationale (recorded so future edits don't drift it)
 
