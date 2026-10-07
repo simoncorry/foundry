@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FOUNDRY_SECTION } from '../scripts/check-context-budgets.js';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const script = join(repoRoot, 'scripts', 'install.js');
@@ -38,17 +39,28 @@ test('fresh install populates the documented set and only that set', () => {
   assert.ok(!existsSync(join(target, 'docs')), 'wiki must stay home without --wiki');
   assert.ok(!existsSync(join(target, 'README.md')), 'Foundry\'s own README must not ride along');
   assert.ok(!existsSync(join(target, 'tests')), 'Foundry\'s tests must not ride along');
-  assert.ok(r.out.includes('0 updated, 0 removed, 0 unchanged'));
+  assert.ok(r.out.includes('0 updated, 0 merged, 0 kept, 0 removed, 0 unchanged'), r.out);
+  const agents = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+  assert.equal(agents, `${FOUNDRY_SECTION.start}\n${readFileSync(join(repoRoot, 'AGENTS.md'), 'utf8')}${FOUNDRY_SECTION.end}\n`);
   assert.ok(r.out.includes('create CLAUDE.md'));
   assert.ok(!r.out.includes('note:'), 'a fresh target needs no CLAUDE.md notice');
   rmSync(target, { recursive: true, force: true });
 });
 
+// A copy an older install really left in an old commands folder.
+function oldCommand(rel) {
+  const first = execFileSync('git', ['-C', repoRoot, 'log', '--format=%H', '--reverse', '--', rel], { encoding: 'utf8' })
+    .trim().split('\n')[0];
+  return execFileSync('git', ['-C', repoRoot, 'show', `${first}:${rel}`]);
+}
+
 test("re-install removes old Foundry command copies and keeps the project's own", () => {
   const target = mkdtempSync(join(tmpdir(), 'install-old-commands-'));
-  for (const dir of [join(target, '.cursor', 'commands'), join(target, '.claude', 'commands')]) {
+  for (const tool of ['.cursor', '.claude']) {
+    const dir = join(target, tool, 'commands');
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'build-it.md'), 'an older Foundry copy\n');
+    writeFileSync(join(dir, 'build-it.md'), oldCommand(`${tool}/commands/build-it.md`));
+    writeFileSync(join(dir, 'quiz.md'), 'the project\'s own quiz, named like an old Foundry command\n');
     writeFileSync(join(dir, 'deploy.md'), 'the project\'s own command\n');
     writeFileSync(join(dir, 'solo.md'), 'the project\'s own command, named like a newer Foundry one\n');
   }
@@ -56,7 +68,15 @@ test("re-install removes old Foundry command copies and keeps the project's own"
   assert.equal(r.code, 0);
   assert.ok(r.out.includes('remove .cursor/commands/build-it.md'));
   assert.ok(r.out.includes('remove .claude/commands/build-it.md'));
-  assert.ok(r.out.includes('2 removed'));
+  assert.ok(r.out.includes('2 kept, 2 removed'), r.out);
+  for (const tool of ['.cursor', '.claude']) {
+    assert.ok(r.out.includes(`keep ${tool}/commands/quiz.md: named like an old Foundry command`), r.out);
+    assert.equal(
+      readFileSync(join(target, tool, 'commands', 'quiz.md'), 'utf8'),
+      'the project\'s own quiz, named like an old Foundry command\n',
+      `${tool}: a same-named file with other contents is the project's`
+    );
+  }
   assert.ok(!existsSync(join(target, '.cursor', 'commands', 'build-it.md')));
   assert.ok(!existsSync(join(target, '.claude', 'commands', 'build-it.md')));
   assert.equal(readFileSync(join(target, '.cursor', 'commands', 'deploy.md'), 'utf8'), 'the project\'s own command\n');
@@ -129,7 +149,10 @@ test('a copy that fails partway leaves the old command copies in place', () => {
   writeFileSync(join(target, '.agents'), 'not a folder\n');
   const r = run([target]);
   assert.notEqual(r.code, 0);
+  assert.ok(r.out.includes('in the way: .agents/skills/'), r.out);
+  assert.ok(r.out.includes('nothing written'), r.out);
   assert.equal(readFileSync(join(target, '.cursor', 'commands', 'build-it.md'), 'utf8'), 'an older Foundry copy\n');
+  assert.deepEqual(readdirSync(target).sort(), ['.agents', '.cursor'], 'a refused run writes nothing');
   rmSync(target, { recursive: true, force: true });
 });
 
@@ -148,7 +171,7 @@ test('the CLAUDE.md notice names both files when neither imports AGENTS.md', () 
 test('dry run reports old command copies without removing them', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-old-dry-'));
   mkdirSync(join(target, '.cursor', 'commands'), { recursive: true });
-  writeFileSync(join(target, '.cursor', 'commands', 'handoff.md'), 'an older Foundry copy\n');
+  writeFileSync(join(target, '.cursor', 'commands', 'handoff.md'), oldCommand('.cursor/commands/handoff.md'));
   const r = run([target, '--dry-run']);
   assert.equal(r.code, 0);
   assert.ok(r.out.includes('would remove .cursor/commands/handoff.md'));
@@ -232,6 +255,32 @@ test("an installed project gets solo, and its copy of the generator refuses to t
   rmSync(target, { recursive: true, force: true });
 });
 
+test("every reference in an installed project resolves once the chain's own files exist", () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-links-'));
+  assert.equal(run([target, '--wiki']).code, 0);
+  const checker = join(target, 'scripts', 'check-links.js');
+  const links = () => {
+    try {
+      return { code: 0, out: execFileSync('node', [checker], { encoding: 'utf8', stdio: 'pipe' }) };
+    } catch (err) {
+      return { code: err.status, out: `${err.stdout ?? ''}${err.stderr ?? ''}` };
+    }
+  };
+
+  const bare = links();
+  assert.equal(bare.code, 1, 'without a package.json the npm aliases cannot resolve');
+  assert.ok(bare.out.includes('no "check" script in package.json'), bare.out);
+  assert.ok(!bare.out.includes('ENOENT'), 'a missing package.json is a finding, not a crash');
+
+  writeFileSync(join(target, 'package.json'), JSON.stringify({ type: 'module', scripts: { check: 'x', shapes: 'x', test: 'x' } }));
+  mkdirSync(join(target, 'docs', 'plans'), { recursive: true });
+  mkdirSync(join(target, 'docs', 'sessions'), { recursive: true });
+  writeFileSync(join(target, 'docs', 'sessions', 'LOG.md'), '# Sessions\n');
+  const full = links();
+  assert.equal(full.code, 0, full.out);
+  rmSync(target, { recursive: true, force: true });
+});
+
 test('--wiki includes the reference library', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-wiki-'));
   const r = run([target, '--wiki']);
@@ -241,16 +290,17 @@ test('--wiki includes the reference library', () => {
   rmSync(target, { recursive: true, force: true });
 });
 
-test('re-run updates a changed copy and reports it', () => {
+test("a re-run keeps a project's own AGENTS.md and adds Foundry's section below it", () => {
   const target = mkdtempSync(join(tmpdir(), 'install-rerun-'));
   run([target]);
   writeFileSync(join(target, 'AGENTS.md'), 'locally diverged\n');
   const r = run([target]);
   assert.equal(r.code, 0);
-  assert.ok(r.out.includes('update AGENTS.md'));
-  assert.ok(r.out.includes('1 updated'));
-  const restored = readFileSync(join(target, 'AGENTS.md'), 'utf8');
-  assert.ok(restored.includes('Foundry'), 'overwrite restores the upstream copy');
+  assert.ok(r.out.includes("merge AGENTS.md (Foundry's section added below your rules)"), r.out);
+  assert.ok(r.out.includes('0 updated, 1 merged'), r.out);
+  const merged = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+  assert.ok(merged.startsWith('locally diverged\n\n'), 'the project\'s lines stay first');
+  assert.ok(merged.endsWith(`${readFileSync(join(repoRoot, 'AGENTS.md'), 'utf8')}${FOUNDRY_SECTION.end}\n`));
   rmSync(target, { recursive: true, force: true });
 });
 

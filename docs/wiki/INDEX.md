@@ -15,6 +15,7 @@ Ideas about building software that have aged well across fifty years, for design
 - [Context engineering](engineering/context-engineering.md): keeping what the agent reads lean, honest, and re-tunable. Reach for it when a rules file grows, the model generation changes, or the process feels heavier than the work it governs.
 - [Chain economics](engineering/chain-economics.md): what Foundry's source project actually measured about cost, what stayed uncertain, and which defaults the evidence supports. Reach for it before claiming a process change saves money.
 - [Unattended runs](engineering/unattended-runs.md): outside facts an agent running without the human leans on (merge checks, deploys on merge, dropped turns), with sources. Reach for it before changing what `/solo` may do on its own.
+- [Installing into someone else's project](engineering/installing-into-projects.md): how the installer tells its own copies from a project's files, shares files both sides edit, and refuses before writing. Reach for it before changing what the installer may write or delete.
 - [Clear technical writing](engineering/clear-technical-writing.md): how to explain technical work in plain English without deleting the terms the reader needs. Reach for it when writing for someone who doesn't share your context, or when a review flags unexplained language.
 
 ## Design fundamentals

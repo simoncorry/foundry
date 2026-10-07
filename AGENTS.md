@@ -4,7 +4,7 @@
 
 This file is the shared ground rules for any agent working in a project that uses Foundry. Cursor and Codex read it natively. Claude Code reads it through the one-line import in CLAUDE.md. If your tool reads none of these, paste this file into the chat at the start of a session.
 
-Foundry is an agent process: named stages you run in order, each one a markdown command in this repo. The chain is start-up, construct-the-plan, frame-it, challenge-plan 1 through 5, build-it, test-it, security-scan, challenge-implementation 1 through 5, wrap-up, handoff, with quiz available at any point and solo to hand the rest of the chain to the agent. You don't have to run all of it every time; see the light path in docs/light-path.md.
+Foundry is an agent process: named stages you run in order, each one a markdown command in this repo. The chain is start-up, construct-the-plan, frame-it, challenge-plan 1 through 5, build-it, test-it, security-scan, challenge-implementation 1 through 5, wrap-up, handoff, with quiz available at any point and solo to hand the rest of the chain to the agent. You don't have to run all of it every time. The light path keeps every stage but runs two challenge rounds instead of five on each side, and frame-it always stays. It trades some assurance for less work, with no measured saving, so spend the full chain on work that touches money or user data or that you'll live with for months. `/solo` followed by `light` runs it.
 
 ## What the chain assumes
 

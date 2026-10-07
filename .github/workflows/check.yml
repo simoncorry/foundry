@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # The installer recognizes older Foundry copies from git history,
+          # and its tests use past versions; a shallow clone has neither.
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
