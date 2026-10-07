@@ -8,7 +8,7 @@ When the human types `/solo` (or "go solo"), hand the rest of the session to the
 
 ## Where it starts
 
-Read the conversation and the plan to see what already ran, then start at the next unfinished stage. A plan this conversation made in the tool's own plan folder gets copied into `docs/plans/` first; never other plans there. The plan is the one the conversation or the focus names, else the only one not SHIPPED, else the newest that matches the focus (log the choice). Text after the command: `light` alone, or `light:` before a focus, means the light path (docs/light-path.md); any other text is the focus. With no focus text, no pasted handoff, and no unfinished plan, say "Solo needs a focus: type /solo and what to build." and end. In a read-only mode, switch to editing where the tool allows; otherwise say so in one line.
+Read the conversation and the plan to see what already ran, then start at the next unfinished stage. A plan in the tool's own plan folder that this conversation made or names (a pasted handoff counts) gets copied into `docs/plans/` first; never other plans there. The plan is the one the conversation or the focus names, else the only one not SHIPPED, else the newest that matches the focus (log the choice). Text after the command: `light` alone, or `light:` before a focus, means the light path (docs/light-path.md); any other text is the focus. With no focus text, no pasted handoff, and no unfinished plan, say "Solo needs a focus: type /solo and what to build." and end. In a read-only mode, switch to editing where the tool allows; otherwise say so in one line.
 
 Stage order is the chain in AGENTS.md, with security-scan only when it applies.
 
@@ -40,4 +40,4 @@ The background-work barrier applies. Handoff merges only when at least one check
 
 ## Rationale (recorded so future edits don't drift it)
 
-The goal commands the tools ship finish unattended but leave little behind. Solo also leaves the plan, the decisions, and the handoff, so every call can be read and overruled afterward. It points at the stages instead of restating them, so each keeps one source.
+The goal commands the tools ship finish unattended but leave little behind. Solo also leaves the plan, the decisions, and the handoff, so every call can be read and overruled afterward.
