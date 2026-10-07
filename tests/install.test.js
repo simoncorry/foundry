@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,6 +73,43 @@ test('a commands folder that links outside the project is never cleaned', () => 
   assert.equal(readFileSync(join(outside, 'start-up.md'), 'utf8'), 'someone else\'s file\n');
   assert.ok(r.out.includes('0 removed'));
   rmSync(base, { recursive: true, force: true });
+});
+
+test('symlinks that would carry a write outside the project stop the run before anything is written', () => {
+  const cases = {
+    'a linked file': (project, elsewhere) => {
+      mkdirSync(join(project, 'scripts'), { recursive: true });
+      symlinkSync(join(elsewhere, 'victim.txt'), join(project, 'scripts', 'install.js'));
+    },
+    'a linked folder deep inside': (project, elsewhere) => {
+      mkdirSync(join(project, '.agents', 'skills'), { recursive: true });
+      symlinkSync(elsewhere, join(project, '.agents', 'skills', 'quiz'));
+    },
+    'a dangling CLAUDE.md link': (project, elsewhere) => {
+      symlinkSync(join(elsewhere, 'made-by-installer.txt'), join(project, 'CLAUDE.md'));
+    },
+    'a linked top-level folder that stays inside': (project) => {
+      mkdirSync(join(project, 'real-scripts'));
+      symlinkSync(join(project, 'real-scripts'), join(project, 'scripts'));
+    },
+  };
+  for (const [name, arrange] of Object.entries(cases)) {
+    const base = mkdtempSync(join(tmpdir(), 'install-escape-'));
+    const project = join(base, 'project');
+    const elsewhere = join(base, 'elsewhere');
+    mkdirSync(project);
+    mkdirSync(elsewhere);
+    writeFileSync(join(elsewhere, 'victim.txt'), 'someone else\'s file\n');
+    arrange(project, elsewhere);
+    const r = run([project]);
+    assert.equal(r.code, 1, name);
+    assert.ok(r.out.includes("can't safely write through"), `${name}: ${r.out}`);
+    assert.ok(r.out.includes('nothing written'), name);
+    assert.equal(readFileSync(join(elsewhere, 'victim.txt'), 'utf8'), 'someone else\'s file\n', name);
+    assert.deepEqual(readdirSync(elsewhere), ['victim.txt'], name);
+    assert.ok(!existsSync(join(project, 'AGENTS.md')), `${name}: nothing may be written`);
+    rmSync(base, { recursive: true, force: true });
+  }
 });
 
 test('a copy that fails partway leaves the old command copies in place', () => {

@@ -30,7 +30,7 @@
 // Re-runs overwrite on purpose; treat your copies as consumed, not forked.
 // If you've deliberately diverged a file, don't re-run blind.
 
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,15 +100,56 @@ function collectFiles(root, rel, found) {
   }
 }
 
+// Every write must land inside the target. A symlink anywhere on the way
+// (a linked folder, a linked file, a dangling link) would otherwise let the
+// copy overwrite or create files elsewhere on the machine. Checks the
+// deepest part of the path that already exists; anything not yet created
+// is made fresh under it.
+function landsInside(path) {
+  for (let probe = path; probe !== target; probe = dirname(probe)) {
+    let exists = true;
+    try {
+      lstatSync(probe);
+    } catch {
+      exists = false;
+    }
+    if (!exists) continue;
+    try {
+      const real = realpathSync(probe);
+      return real === realTarget || real.startsWith(realTarget + sep);
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
 const created = [];
 const updated = [];
 let unchanged = 0;
+const outside = [];
 
 for (const item of wanted) {
   if (!existsSync(join(foundryRoot, item))) fail(`source ${item} missing from the Foundry checkout; is it complete?`);
+  // fs.cpSync refuses to copy a folder over a symlink, even one that stays
+  // inside the target, and it fails partway; catch it here instead.
+  let itemIsLink = false;
+  try {
+    itemIsLink = lstatSync(join(target, item)).isSymbolicLink() && statSync(join(foundryRoot, item)).isDirectory();
+  } catch {
+    itemIsLink = false;
+  }
+  if (itemIsLink) {
+    outside.push(item);
+    continue;
+  }
   const files = [];
   collectFiles(foundryRoot, item, files);
   for (const rel of files) {
+    if (!landsInside(join(target, rel))) {
+      outside.push(rel);
+      continue;
+    }
     const destFile = join(target, rel);
     if (!existsSync(destFile)) {
       created.push(rel);
@@ -122,6 +163,11 @@ for (const item of wanted) {
 
 const claudeFiles = ['CLAUDE.md', join('.claude', 'CLAUDE.md')].filter((f) => existsSync(join(target, f)));
 const createClaude = claudeFiles.length === 0;
+if (createClaude && !landsInside(join(target, 'CLAUDE.md'))) outside.push('CLAUDE.md');
+if (outside.length > 0) {
+  for (const rel of outside) console.error(`  outside: ${rel}`);
+  fail(`${outside.length} path(s) in the target go through a symlink the installer can't safely write through (one that leads outside the target, or a linked folder); nothing written. Replace them with real files or folders and re-run.`);
+}
 if (createClaude) created.push('CLAUDE.md');
 const claudeMissesImport =
   !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
