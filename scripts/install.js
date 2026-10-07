@@ -254,7 +254,7 @@ function wrongType(rel) {
   return false;
 }
 
-const plan = []; // { rel, action, from?, text? }  action: create | update | merge | unchanged
+const plan = []; // { rel, action, text?, note? }  action: create | update | merge | unchanged; no text means copy Foundry's file
 const kept = []; // { rel, why }: the project's files left alone
 const notes = [];
 const refusals = [];
@@ -268,16 +268,9 @@ function existing(rel) {
 
 function addCopy(rel) {
   const current = existing(rel);
-  if (current === null) plan.push({ rel, action: 'create', from: rel });
+  if (current === null) plan.push({ rel, action: 'create' });
   else if (current.equals(readFileSync(join(foundryRoot, rel)))) plan.push({ rel, action: 'unchanged' });
-  else plan.push({ rel, action: 'update', from: rel });
-}
-
-function addRendered(rel, text, changedAction = 'update') {
-  const current = existing(rel);
-  if (current === null) plan.push({ rel, action: 'create', text });
-  else if (current.toString('utf8') === text) plan.push({ rel, action: 'unchanged' });
-  else plan.push({ rel, action: changedAction, text });
+  else plan.push({ rel, action: 'update' });
 }
 
 function planAgents() {
@@ -433,8 +426,12 @@ for (const rel of plainFiles) {
         ours = false;
       }
     }
-    if (ours) addRendered(COMMAND_LIST, `${JSON.stringify(foundryNames.filter((name) => !keptSkills.has(name)), null, 2)}\n`);
-    else kept.push({ rel: portable(COMMAND_LIST), why: "yours: it lists names that aren't Foundry commands, so the budget check will count what it lists" });
+    if (ours) {
+      const text = `${JSON.stringify(foundryNames.filter((name) => !keptSkills.has(name)), null, 2)}\n`;
+      if (current === null) plan.push({ rel, action: 'create', text });
+      else if (current.toString('utf8') === text) plan.push({ rel, action: 'unchanged' });
+      else plan.push({ rel, action: 'update', text });
+    } else kept.push({ rel: portable(COMMAND_LIST), why: "yours: it lists names that aren't Foundry commands, so the budget check will count what it lists" });
   } else {
     const current = existing(rel);
     if (current === null || overwrite || isFoundryCopy(rel, current)) addCopy(rel);
@@ -442,7 +439,7 @@ for (const rel of plainFiles) {
   }
 }
 
-if (createClaude) plan.push({ rel: 'CLAUDE.md', action: 'create', from: 'CLAUDE.md' });
+if (createClaude) plan.push({ rel: 'CLAUDE.md', action: 'create' });
 const claudeMissesImport =
   !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
 
@@ -527,7 +524,7 @@ if (!dryRun) {
       const dest = join(target, p.rel);
       mkdirSync(dirname(dest), { recursive: true });
       if (p.text !== undefined) writeFileSync(dest, p.text);
-      else copyFileSync(join(foundryRoot, p.from), dest);
+      else copyFileSync(join(foundryRoot, p.rel), dest);
       done += 1;
     }
   } catch (error) {
