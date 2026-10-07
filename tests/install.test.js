@@ -194,6 +194,40 @@ test('install copies the budget checker without rewriting consumer package scrip
   rmSync(target, { recursive: true, force: true });
 });
 
+test("an installed project gets solo, and its copy of the generator refuses to touch the project's skills", () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-generator-'));
+  writeFileSync(join(target, 'package.json'), '{ "name": "my-app" }\n');
+  const ownSkill = join(target, '.agents', 'skills', 'deploy', 'SKILL.md');
+  mkdirSync(dirname(ownSkill), { recursive: true });
+  writeFileSync(ownSkill, 'Deploy the app. Our own skill, no header.\n');
+  assert.equal(run([target]).code, 0);
+  assert.ok(existsSync(join(target, '.agents', 'skills', 'solo', 'SKILL.md')));
+  assert.ok(existsSync(join(target, '.claude', 'skills', 'solo', 'SKILL.md')));
+
+  const generator = join(target, 'scripts', 'generate-command-shapes.js');
+  const env = { ...process.env };
+  delete env.SHAPES_ROOT;
+  for (const args of [[], ['--confirm']]) {
+    let code = 0;
+    let out = '';
+    try {
+      execFileSync('node', [generator, ...args], { cwd: target, encoding: 'utf8', stdio: 'pipe', env });
+    } catch (err) {
+      code = err.status;
+      out = `${err.stdout ?? ''}${err.stderr ?? ''}`;
+    }
+    assert.equal(code, 1, `generator ${args} should refuse`);
+    assert.ok(out.includes('[shapes] REFUSED'), out);
+  }
+  assert.equal(readFileSync(ownSkill, 'utf8'), 'Deploy the app. Our own skill, no header.\n');
+  assert.ok(!existsSync(join(target, '.claude', 'skills', 'deploy')));
+
+  const budget = execFileSync('node', [join(target, 'scripts', 'check-context-budgets.js')], { encoding: 'utf8' });
+  assert.ok(budget.includes('across 20 files'), budget);
+  assert.ok(!budget.includes('deploy'), 'the project\'s own skill is not a Foundry command');
+  rmSync(target, { recursive: true, force: true });
+});
+
 test('--wiki includes the reference library', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-wiki-'));
   const r = run([target, '--wiki']);

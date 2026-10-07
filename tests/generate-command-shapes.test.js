@@ -290,7 +290,7 @@ test('an invalid folder name, an empty body, and a folder with no SKILL.md each 
 });
 
 test('outside a Foundry checkout it refuses in both modes and writes nothing', () => {
-  for (const pkg of [null, 'not json', '{ "name": "my-app" }\n']) {
+  for (const pkg of [null, 'not json', 'null', '[]', '{}', '{ "name": "my-app" }\n', '{ "name": "Foundry" }\n']) {
     withFixture((root) => {
       if (pkg === null) rmSync(join(root, 'package.json'));
       else writeFileSync(join(root, 'package.json'), pkg);
