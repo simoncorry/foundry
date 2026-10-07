@@ -158,8 +158,8 @@ if (!dryRun) {
 
 if (claudeMissesImport) {
   console.log(
-    `  note: ${claudeFiles.join(' and ')} doesn't import AGENTS.md, so Claude Code won't load Foundry's rules. ` +
-    `Add a line reading ${CLAUDE_IMPORT} to it.`
+    `  note: ${claudeFiles.join(' and ')} ${claudeFiles.length > 1 ? "don't" : "doesn't"} import AGENTS.md, ` +
+    `so Claude Code won't load Foundry's rules. Add a line reading ${CLAUDE_IMPORT} to ${claudeFiles.length > 1 ? 'one of them' : 'it'}.`
   );
 }
 

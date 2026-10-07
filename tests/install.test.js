@@ -59,6 +59,30 @@ test("re-install removes old Foundry command copies and keeps the project's own"
   rmSync(target, { recursive: true, force: true });
 });
 
+test('a copy that fails partway leaves the old command copies in place', () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-partial-'));
+  mkdirSync(join(target, '.cursor', 'commands'), { recursive: true });
+  writeFileSync(join(target, '.cursor', 'commands', 'build-it.md'), 'an older Foundry copy\n');
+  // A file where the skills folder should go makes the copy fail.
+  writeFileSync(join(target, '.agents'), 'not a folder\n');
+  const r = run([target]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(join(target, '.cursor', 'commands', 'build-it.md'), 'utf8'), 'an older Foundry copy\n');
+  rmSync(target, { recursive: true, force: true });
+});
+
+test('the CLAUDE.md notice names both files when neither imports AGENTS.md', () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-two-claude-'));
+  mkdirSync(join(target, '.claude'), { recursive: true });
+  writeFileSync(join(target, 'CLAUDE.md'), 'root notes\n');
+  writeFileSync(join(target, '.claude', 'CLAUDE.md'), 'nested notes\n');
+  const r = run([target]);
+  assert.equal(r.code, 0);
+  assert.ok(r.out.includes("note: CLAUDE.md and .claude/CLAUDE.md don't import AGENTS.md"), r.out);
+  assert.ok(r.out.includes('Add a line reading @AGENTS.md to one of them.'), r.out);
+  rmSync(target, { recursive: true, force: true });
+});
+
 test('dry run reports old command copies without removing them', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-old-dry-'));
   mkdirSync(join(target, '.cursor', 'commands'), { recursive: true });
@@ -80,7 +104,7 @@ test("a project's own CLAUDE.md survives install and re-install, with a notice w
     assert.equal(r.code, 0);
     assert.equal(readFileSync(join(target, 'CLAUDE.md'), 'utf8'), own);
     assert.ok(!r.out.includes('create CLAUDE.md'));
-    assert.ok(r.out.includes("note: CLAUDE.md doesn't import AGENTS.md"));
+    assert.ok(r.out.includes("note: CLAUDE.md doesn't import AGENTS.md, so Claude Code won't load Foundry's rules. Add a line reading @AGENTS.md to it."), r.out);
   }
   rmSync(target, { recursive: true, force: true });
 });
