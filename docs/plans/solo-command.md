@@ -176,3 +176,6 @@ The home check runs first, then the link check, then the existing header checks.
 | R7 | R6's fit claim | Confirmed by the measured draft. |
 
 ## Deviations
+
+- Plan said the rules-only scratch draft (3,294 bytes) showed the solo file fits easily. The real file came out at 4,450 bytes on the first write, over the 4,400 cap, because it quotes the stop phrases, lists the stage order, and keeps the read-only-mode line. Chose to trim wording (rationale, two reason clauses) rather than drop any rule; it landed at 4,254 bytes, leaving 620 bytes of command budget (`.agents/skills/solo/SKILL.md`). Lesson: a scratch draft undercounts by about a quarter once the exact wording goes in.
+- Plan said the existing fixture helper only needed a foundry `package.json`. The link tests forced a second helper change: `snapshot()` in `tests/generate-command-shapes.test.js` read every non-folder entry as a file and crashed on a dangling link, so it now records links as `(link)`. Chose that over skipping links, so the tests still prove nothing appears or changes at the link. Lesson: helpers that walk a tree meet the same link cases the code under test does.
