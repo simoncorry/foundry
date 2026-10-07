@@ -123,6 +123,13 @@ test('an edited, unmarked older Foundry AGENTS.md is kept byte for byte until --
   rmSync(target, { recursive: true, force: true });
 });
 
+test("the title line the installer uses to spot an edited old copy is still AGENTS.md's title", () => {
+  assert.ok(
+    foundryAgents.split('\n').includes('# Foundry: the working agreement'),
+    "AGENTS.md's title changed: update FOUNDRY_TITLE in scripts/install.js and keep the old title recognized too"
+  );
+});
+
 test("a line written inside Foundry's section survives a re-run with a note, and --overwrite refreshes it", () => {
   const target = project('inside');
   run([target]);
@@ -257,6 +264,9 @@ test("a project AGENTS.md big enough for Codex to cut off gets a note", () => {
   const r = run([target]);
   assert.equal(r.code, 0);
   assert.ok(r.out.includes('Codex reads only the first 32768 by default'), r.out);
+  const again = run([target]);
+  assert.ok(again.out.includes('0 merged'), again.out);
+  assert.ok(again.out.includes('Codex reads only the first 32768 by default'), 'still warned when the installer changes nothing');
   rmSync(target, { recursive: true, force: true });
 });
 

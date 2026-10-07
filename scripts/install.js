@@ -486,9 +486,12 @@ if (refusals.length > 0) {
   fail(`${refusals.length} file(s) in the target can't be updated safely; nothing written.`);
 }
 
+// Checked on every run, not only when Foundry writes the file: a project's
+// own rules can grow past the limit between installs.
 const agentsPlan = plan.find((p) => p.rel === AGENTS && p.text !== undefined);
-if (agentsPlan && Buffer.byteLength(agentsPlan.text, 'utf8') > CODEX_AGENTS_LIMIT) {
-  notes.push(`AGENTS.md will be ${Buffer.byteLength(agentsPlan.text, 'utf8')} bytes. Codex reads only the first ${CODEX_AGENTS_LIMIT} by default and drops the rest without a warning, which can cut Foundry's section; shorten your own rules or raise project_doc_max_bytes in Codex's config.`);
+const agentsBytes = agentsPlan ? Buffer.byteLength(agentsPlan.text, 'utf8') : (existing(AGENTS)?.length ?? 0);
+if (agentsBytes > CODEX_AGENTS_LIMIT) {
+  notes.push(`AGENTS.md is ${agentsBytes} bytes. Codex reads only the first ${CODEX_AGENTS_LIMIT} by default and drops the rest without a warning, which can cut Foundry's section; shorten your own rules or raise project_doc_max_bytes in Codex's config.`);
 }
 if (kept.some((k) => k.rel === portable(WIKI_INDEX))) {
   const index = existing(WIKI_INDEX).toString('utf8');
