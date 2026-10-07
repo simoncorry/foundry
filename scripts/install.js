@@ -38,9 +38,9 @@
 //
 // Older installs shipped command copies in .cursor/commands/ and
 // .claude/commands/, which Cursor lists next to the skills as duplicates.
-// After every copy succeeds, files there named after a command those
-// installs shipped are removed; anything else in those folders is the
-// project's own and stays.
+// After every copy succeeds, files there that match a copy those installs
+// shipped are removed; anything else in those folders, including a
+// project's own file under an old command's name, stays.
 //
 // Usage:
 //   node scripts/install.js <target-dir> [--wiki] [--dry-run] [--overwrite]
@@ -49,7 +49,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -153,7 +153,7 @@ let shallow = false;
 function foundryHistory() {
   let out;
   try {
-    out = git(['log', '--root', '--format=', '--raw', '--no-abbrev', '--no-renames', '--relative', '--', ...wanted]);
+    out = git(['log', '--root', '--format=', '--raw', '--no-abbrev', '--no-renames', '--relative', '--', ...wanted, ...OLD_COMMAND_DIRS]);
     shallow = git(['rev-parse', '--is-shallow-repository']).trim() === 'true';
   } catch {
     return null;
@@ -177,9 +177,46 @@ function blobId(bytes) {
 
 const history = foundryHistory();
 
+// Git stores Foundry's files with plain newlines; a Windows checkout may
+// have turned an untouched copy's into carriage-return pairs.
+function shippedAt(rel, bytes) {
+  const blobs = history?.get(portable(rel));
+  if (!blobs) return false;
+  if (blobs.has(blobId(bytes))) return true;
+  const lf = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'));
+  return !lf.equals(bytes) && blobs.has(blobId(lf));
+}
+
 function isFoundryCopy(rel, bytes) {
-  if (bytes.equals(readFileSync(join(foundryRoot, rel)))) return true;
-  return history?.get(portable(rel))?.has(blobId(bytes)) ?? false;
+  return bytes.equals(readFileSync(join(foundryRoot, rel))) || shippedAt(rel, bytes);
+}
+
+// The commit position where each phrase first appeared in Foundry's list,
+// oldest first; null without history. Lets a merge tell a phrase Foundry
+// added since the project last synced from one the project deleted.
+function phraseFirstSeen() {
+  if (history === null) return null;
+  const firstSeen = new Map();
+  let commits;
+  try {
+    commits = git(['log', '--format=%H', '--reverse', '--', PHRASES]).trim().split('\n').filter(Boolean);
+  } catch {
+    return null;
+  }
+  commits.forEach((commit, position) => {
+    let list = [];
+    try {
+      list = JSON.parse(git(['show', `${commit}:./${portable(PHRASES)}`]));
+    } catch {
+      return;
+    }
+    if (!Array.isArray(list)) return;
+    for (const entry of list) {
+      const key = typeof entry?.bad === 'string' ? entry.bad.toLowerCase() : null;
+      if (key !== null && !firstSeen.has(key)) firstSeen.set(key, position);
+    }
+  });
+  return { firstSeen, newest: commits.length };
 }
 
 // Every write must land inside the target. A symlink anywhere on the way
@@ -295,7 +332,12 @@ function planPhrases() {
     return;
   }
   const seen = new Set(projectList.map((entry) => entry.bad.toLowerCase()));
-  const added = foundryList.filter((entry) => !seen.has(entry.bad.toLowerCase()));
+  // A phrase older than the newest Foundry phrase the project already has
+  // was offered before, so its absence is the project's own deletion.
+  const order = phraseFirstSeen();
+  const firstSeen = (entry) => order?.firstSeen.get(entry.bad.toLowerCase()) ?? order?.newest ?? 0;
+  const syncedTo = Math.max(-1, ...projectList.filter((e) => order?.firstSeen.has(e.bad.toLowerCase())).map(firstSeen));
+  const added = foundryList.filter((entry) => !seen.has(entry.bad.toLowerCase()) && (order === null || firstSeen(entry) > syncedTo));
   if (added.length === 0) {
     plan.push({ rel: PHRASES, action: 'unchanged' });
     return;
@@ -333,9 +375,11 @@ for (const rel of files) {
   else if (wrongType(rel)) blocked.push(rel);
 }
 
-const claudeFiles = ['CLAUDE.md', join('.claude', 'CLAUDE.md')].filter((f) => existsSync(join(target, f)));
+const claudeFiles = ['CLAUDE.md', join('.claude', 'CLAUDE.md')]
+  .filter((f) => existsSync(join(target, f)) && statSync(join(target, f)).isFile());
 const createClaude = claudeFiles.length === 0;
 if (createClaude && !landsInside(join(target, 'CLAUDE.md'))) outside.push('CLAUDE.md');
+else if (createClaude && wrongType('CLAUDE.md')) blocked.push('CLAUDE.md');
 if (outside.length > 0) {
   for (const rel of outside) console.error(`  outside: ${rel}`);
   fail(`${outside.length} path(s) in the target go through a symlink the installer can't safely write through (one that leads outside the target, or a linked folder); nothing written. Replace them with real files or folders and re-run.`);
@@ -376,14 +420,66 @@ for (const rel of plainFiles) {
   if (rel === AGENTS) planAgents();
   else if (rel === PHRASES) planPhrases();
   else if (rel === COMMAND_LIST) {
-    const names = JSON.parse(readFileSync(join(foundryRoot, COMMAND_LIST), 'utf8')).filter((name) => !keptSkills.has(name));
-    addRendered(COMMAND_LIST, `${JSON.stringify(names, null, 2)}\n`);
+    const foundryNames = JSON.parse(readFileSync(join(foundryRoot, COMMAND_LIST), 'utf8'));
+    // The installer writes a filtered copy, so no history matches it; a list
+    // of Foundry's own command names is the installer's, anything else isn't.
+    const current = existing(COMMAND_LIST);
+    let ours = current === null || overwrite;
+    if (!ours) {
+      try {
+        const listed = JSON.parse(current.toString('utf8'));
+        ours = Array.isArray(listed) && listed.every((name) => foundryNames.includes(name) || OLD_COMMAND_NAMES.has(name));
+      } catch {
+        ours = false;
+      }
+    }
+    if (ours) addRendered(COMMAND_LIST, `${JSON.stringify(foundryNames.filter((name) => !keptSkills.has(name)), null, 2)}\n`);
+    else kept.push({ rel: portable(COMMAND_LIST), why: "yours: it lists names that aren't Foundry commands, so the budget check will count what it lists" });
   } else {
     const current = existing(rel);
     if (current === null || overwrite || isFoundryCopy(rel, current)) addCopy(rel);
     else kept.push({ rel: portable(rel), why: 'yours, and it differs from every version Foundry shipped' });
   }
 }
+
+if (createClaude) plan.push({ rel: 'CLAUDE.md', action: 'create', from: 'CLAUDE.md' });
+const claudeMissesImport =
+  !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
+
+// Old command copies go only when their bytes match a copy Foundry shipped
+// at that path; a same-named file with other contents is the project's.
+const removed = [];
+for (const dir of OLD_COMMAND_DIRS) {
+  if (!existsSync(join(target, dir)) || !statSync(join(target, dir)).isDirectory()) continue;
+  // A commands folder that resolves outside the target (a symlink, or a
+  // symlinked parent) holds someone else's files; never delete there.
+  if (!landsInside(join(target, dir))) {
+    console.log(`  skip ${dir}: it resolves outside the project, so nothing there is removed`);
+    continue;
+  }
+  for (const entry of readdirSync(join(target, dir), { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.md') || !OLD_COMMAND_NAMES.has(entry.name.replace(/\.md$/, ''))) continue;
+    const rel = join(dir, entry.name);
+    if (shippedAt(rel, readFileSync(join(target, rel)))) removed.push(rel);
+    else kept.push({ rel: portable(rel), why: "named like an old Foundry command but doesn't match one Foundry shipped, so it stays; delete it yourself if it's an old Foundry copy" });
+  }
+}
+
+// Permissions, checked before the first write so a locked file can't stop
+// the run halfway: each file to replace, or the nearest folder that exists
+// above each file to create.
+function writable(rel) {
+  let probe = join(target, rel);
+  while (!existsSync(probe)) probe = dirname(probe);
+  try {
+    accessSync(probe, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+for (const p of plan) if (p.action !== 'unchanged' && !writable(p.rel)) refusals.push(`${portable(p.rel)} can't be written (check its permissions)`);
+for (const rel of removed) if (!writable(dirname(rel))) refusals.push(`${portable(rel)} can't be removed (check its folder's permissions)`);
 
 if (refusals.length > 0) {
   for (const message of refusals) console.error(`  refused: ${message}`);
@@ -419,25 +515,27 @@ if (kept.length > 0 && (history === null || shallow)) {
   );
 }
 
-if (createClaude) plan.push({ rel: 'CLAUDE.md', action: 'create', from: 'CLAUDE.md' });
-const claudeMissesImport =
-  !createClaude && !claudeFiles.some((f) => readFileSync(join(target, f), 'utf8').includes(CLAUDE_IMPORT));
-
-const removed = [];
-for (const dir of OLD_COMMAND_DIRS) {
-  if (!existsSync(join(target, dir)) || !statSync(join(target, dir)).isDirectory()) continue;
-  // A commands folder that resolves outside the target (a symlink, or a
-  // symlinked parent) holds someone else's files; never delete there.
-  if (!landsInside(join(target, dir))) {
-    console.log(`  skip ${dir}: it resolves outside the project, so nothing there is removed`);
-    continue;
+if (!dryRun) {
+  const writes = plan.filter((p) => p.action !== 'unchanged');
+  let done = 0;
+  try {
+    mkdirSync(target, { recursive: true });
+    for (const p of writes) {
+      const dest = join(target, p.rel);
+      mkdirSync(dirname(dest), { recursive: true });
+      if (p.text !== undefined) writeFileSync(dest, p.text);
+      else copyFileSync(join(foundryRoot, p.from), dest);
+      done += 1;
+    }
+  } catch (error) {
+    fail(`stopped partway (${error.message}): ${done} of ${writes.length} files were written and nothing was removed. Fix the cause and re-run; a re-run finishes the job.`);
   }
-  for (const entry of readdirSync(join(target, dir), { withFileTypes: true })) {
-    if (entry.isDirectory() || !entry.name.endsWith('.md')) continue;
-    if (OLD_COMMAND_NAMES.has(entry.name.replace(/\.md$/, ''))) removed.push(join(dir, entry.name));
-  }
+  // Removal runs last: a copy that fails partway leaves the old commands in
+  // place instead of a project with neither the old commands nor the skills.
+  for (const rel of removed) rmSync(join(target, rel));
 }
 
+// The report comes after the writes, so it never claims work that failed.
 const label = dryRun ? 'would ' : '';
 const count = (action) => plan.filter((p) => p.action === action).length;
 for (const action of ['create', 'update', 'merge']) {
@@ -447,20 +545,6 @@ for (const action of ['create', 'update', 'merge']) {
 }
 for (const k of kept) console.log(`  ${label}keep ${k.rel}: ${k.why}`);
 for (const rel of removed) console.log(`  ${label}remove ${portable(rel)}`);
-
-if (!dryRun) {
-  mkdirSync(target, { recursive: true });
-  for (const p of plan) {
-    if (p.action === 'unchanged') continue;
-    const dest = join(target, p.rel);
-    mkdirSync(dirname(dest), { recursive: true });
-    if (p.text !== undefined) writeFileSync(dest, p.text);
-    else copyFileSync(join(foundryRoot, p.from), dest);
-  }
-  // Removal runs last: a copy that fails partway leaves the old commands in
-  // place instead of a project with neither the old commands nor the skills.
-  for (const rel of removed) rmSync(join(target, rel));
-}
 
 for (const message of notes) console.log(`  note: ${message}`);
 if (claudeMissesImport) {

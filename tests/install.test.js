@@ -47,11 +47,20 @@ test('fresh install populates the documented set and only that set', () => {
   rmSync(target, { recursive: true, force: true });
 });
 
+// A copy an older install really left in an old commands folder.
+function oldCommand(rel) {
+  const first = execFileSync('git', ['-C', repoRoot, 'log', '--format=%H', '--reverse', '--', rel], { encoding: 'utf8' })
+    .trim().split('\n')[0];
+  return execFileSync('git', ['-C', repoRoot, 'show', `${first}:${rel}`]);
+}
+
 test("re-install removes old Foundry command copies and keeps the project's own", () => {
   const target = mkdtempSync(join(tmpdir(), 'install-old-commands-'));
-  for (const dir of [join(target, '.cursor', 'commands'), join(target, '.claude', 'commands')]) {
+  for (const tool of ['.cursor', '.claude']) {
+    const dir = join(target, tool, 'commands');
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'build-it.md'), 'an older Foundry copy\n');
+    writeFileSync(join(dir, 'build-it.md'), oldCommand(`${tool}/commands/build-it.md`));
+    writeFileSync(join(dir, 'quiz.md'), 'the project\'s own quiz, named like an old Foundry command\n');
     writeFileSync(join(dir, 'deploy.md'), 'the project\'s own command\n');
     writeFileSync(join(dir, 'solo.md'), 'the project\'s own command, named like a newer Foundry one\n');
   }
@@ -59,7 +68,15 @@ test("re-install removes old Foundry command copies and keeps the project's own"
   assert.equal(r.code, 0);
   assert.ok(r.out.includes('remove .cursor/commands/build-it.md'));
   assert.ok(r.out.includes('remove .claude/commands/build-it.md'));
-  assert.ok(r.out.includes('2 removed'));
+  assert.ok(r.out.includes('2 kept, 2 removed'), r.out);
+  for (const tool of ['.cursor', '.claude']) {
+    assert.ok(r.out.includes(`keep ${tool}/commands/quiz.md: named like an old Foundry command`), r.out);
+    assert.equal(
+      readFileSync(join(target, tool, 'commands', 'quiz.md'), 'utf8'),
+      'the project\'s own quiz, named like an old Foundry command\n',
+      `${tool}: a same-named file with other contents is the project's`
+    );
+  }
   assert.ok(!existsSync(join(target, '.cursor', 'commands', 'build-it.md')));
   assert.ok(!existsSync(join(target, '.claude', 'commands', 'build-it.md')));
   assert.equal(readFileSync(join(target, '.cursor', 'commands', 'deploy.md'), 'utf8'), 'the project\'s own command\n');
@@ -154,7 +171,7 @@ test('the CLAUDE.md notice names both files when neither imports AGENTS.md', () 
 test('dry run reports old command copies without removing them', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-old-dry-'));
   mkdirSync(join(target, '.cursor', 'commands'), { recursive: true });
-  writeFileSync(join(target, '.cursor', 'commands', 'handoff.md'), 'an older Foundry copy\n');
+  writeFileSync(join(target, '.cursor', 'commands', 'handoff.md'), oldCommand('.cursor/commands/handoff.md'));
   const r = run([target, '--dry-run']);
   assert.equal(r.code, 0);
   assert.ok(r.out.includes('would remove .cursor/commands/handoff.md'));

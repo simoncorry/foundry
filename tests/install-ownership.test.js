@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -173,13 +173,26 @@ test("a grown phrase list keeps the project's entries and gains Foundry's new on
   const target = project('phrases');
   run([target]);
   const ours = { bad: 'zorbly flux', good: 'plain thing' };
-  const grown = [...foundryPhrases.slice(0, -2), ours];
+  // The list an early install shipped, grown by the project's own wrap-ups.
+  const early = JSON.parse(oldestVersion('scripts/phrase-list.json').toString('utf8'));
+  const grown = [...early, ours];
   put(target, 'scripts/phrase-list.json', `${JSON.stringify(grown, null, 2)}\n`);
   const r = run([target]);
   assert.equal(r.code, 0, r.out);
-  assert.ok(r.out.includes('  merge scripts/phrase-list.json (2 new phrases; run node scripts/check-jargon.js)\n'), r.out);
+  const earlyBads = new Set(early.map((e) => e.bad.toLowerCase()));
+  const newSince = foundryPhrases.filter((e) => !earlyBads.has(e.bad.toLowerCase()));
+  assert.ok(newSince.length > 0, 'the fixture needs phrases Foundry added since');
+  assert.ok(r.out.includes(`  merge scripts/phrase-list.json (${newSince.length} new phrases; run node scripts/check-jargon.js)\n`), r.out);
   const merged = JSON.parse(read(target, 'scripts/phrase-list.json'));
-  assert.deepEqual(merged, [...grown, ...foundryPhrases.slice(-2)]);
+  assert.deepEqual(merged, [...grown, ...newSince]);
+
+  // A phrase the project deleted from an up-to-date list stays deleted.
+  const pruned = [...foundryPhrases.filter((_, i) => i !== 5), ours];
+  const prunedText = `${JSON.stringify(pruned, null, 1)}\n`;
+  put(target, 'scripts/phrase-list.json', prunedText);
+  const after = run([target]);
+  assert.ok(after.out.includes('0 merged'), after.out);
+  assert.equal(read(target, 'scripts/phrase-list.json'), prunedText);
 
   // Every Foundry entry already there (one in different case): nothing to add,
   // so the project's own formatting is left exactly as it was.
@@ -295,6 +308,61 @@ test('a shallow Foundry clone keeps older copies and points at unshallowing', ()
   assert.ok(r.out.includes('a shallow clone'), r.out);
   assert.ok(r.out.includes('git fetch --unshallow'), r.out);
   rmSync(base, { recursive: true, force: true });
+});
+
+test("a project's own command list is kept; one naming only Foundry commands is the installer's", () => {
+  const target = project('command-list');
+  put(target, 'scripts/foundry-commands.json', '["my-cmd"]\n');
+  const r = run([target]);
+  assert.ok(r.out.includes("keep scripts/foundry-commands.json: yours: it lists names that aren't Foundry commands"), r.out);
+  assert.equal(read(target, 'scripts/foundry-commands.json'), '["my-cmd"]\n');
+
+  put(target, 'scripts/foundry-commands.json', '["quiz"]\n');
+  const again = run([target]);
+  assert.ok(again.out.includes('  update scripts/foundry-commands.json\n'), again.out);
+  assert.equal(read(target, 'scripts/foundry-commands.json'), read(repoRoot, 'scripts/foundry-commands.json'));
+  rmSync(target, { recursive: true, force: true });
+});
+
+test('a folder named CLAUDE.md is in the way, refused cleanly before anything is written', () => {
+  const target = project('claude-dir');
+  mkdirSync(join(target, 'CLAUDE.md'));
+  const r = run([target]);
+  assert.equal(r.code, 1);
+  assert.ok(r.out.includes('in the way: CLAUDE.md'), r.out);
+  assert.ok(!r.out.includes('EISDIR'), r.out);
+  assert.deepEqual(readdirSync(target), ['CLAUDE.md']);
+  rmSync(target, { recursive: true, force: true });
+});
+
+test('a file the installer would replace but cannot write stops the run before any write', { skip: process.getuid?.() === 0 && 'root ignores file permissions' }, () => {
+  const target = project('readonly');
+  const rel = '.agents/skills/build-it/SKILL.md';
+  put(target, rel, oldestVersion(rel));
+  chmodSync(join(target, rel), 0o444);
+  const r = run([target]);
+  assert.equal(r.code, 1, r.out);
+  assert.ok(r.out.includes(`refused: ${rel} can't be written (check its permissions)`), r.out);
+  assert.ok(r.out.includes('nothing written'), r.out);
+  assert.ok(!r.out.includes('  update '), 'no report line claims a write that never happened');
+  assert.deepEqual(readdirSync(target), ['.agents']);
+  chmodSync(join(target, rel), 0o644);
+  rmSync(target, { recursive: true, force: true });
+});
+
+test('an untouched copy with Windows line endings is still recognized as Foundry\'s', () => {
+  const target = project('crlf');
+  run([target]);
+  const rel = '.agents/skills/quiz/SKILL.md';
+  put(target, rel, read(target, rel).replace(/\n/g, '\r\n'));
+  put(target, 'AGENTS.md', read(target, 'AGENTS.md').replace(/\n/g, '\r\n'));
+  const r = run([target]);
+  assert.equal(r.code, 0, r.out);
+  assert.ok(r.out.includes(`  update ${rel}\n`), r.out);
+  assert.ok(r.out.includes('  update AGENTS.md\n'), r.out);
+  assert.ok(r.out.includes('0 kept'), r.out);
+  assert.equal(read(target, rel), read(repoRoot, rel));
+  rmSync(target, { recursive: true, force: true });
 });
 
 test('a CommonJS project is told the scripts will not load', () => {
