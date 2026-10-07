@@ -362,9 +362,9 @@ test('a link deeper on any write path is refused before anything is written thro
       try {
         arrange(root, outside);
         const before = { root: snapshot(root), outside: snapshot(outside) };
-        for (const args of [[], ['--confirm']]) {
-          const r = run(root, args);
-          assert.equal(r.code, 1, `${label} ${args}`);
+        for (const [given, args] of [[root, []], [root, ['--confirm']], [`${root}/`, []]]) {
+          const r = run(given, args);
+          assert.equal(r.code, 1, `${label} ${given} ${args}`);
           assert.ok(r.stdout.includes(`[shapes] INVALID: ${linkPath}: is a link`), `${label}: ${r.stdout}`);
         }
         assert.deepEqual({ root: snapshot(root), outside: snapshot(outside) }, before, label);

@@ -8,9 +8,9 @@ When the human types `/solo` (or "go solo"), hand the rest of the session to the
 
 ## Where it starts
 
-Read the conversation and the plan to see what already ran, then start at the next unfinished stage. A plan that only exists in the tool's own plan folder gets copied into `docs/plans/` first. The plan is the one the conversation or the focus names, else the only one not SHIPPED, else the newest that matches the focus (log the choice). Text after the command: `light` alone, or `light:` before a focus, means the light path (docs/light-path.md); any other text is the focus. With no focus text, no pasted handoff, and no unfinished plan, say "Solo needs a focus: type /solo and what to build." and end. In a read-only mode, switch to editing where the tool allows; otherwise say so in one line.
+Read the conversation and the plan to see what already ran, then start at the next unfinished stage. A plan this conversation made in the tool's own plan folder gets copied into `docs/plans/` first; never other plans there. The plan is the one the conversation or the focus names, else the only one not SHIPPED, else the newest that matches the focus (log the choice). Text after the command: `light` alone, or `light:` before a focus, means the light path (docs/light-path.md); any other text is the focus. With no focus text, no pasted handoff, and no unfinished plan, say "Solo needs a focus: type /solo and what to build." and end. In a read-only mode, switch to editing where the tool allows; otherwise say so in one line.
 
-Stage order: start-up, construct-the-plan, frame-it, challenge-plan 1 to 5, build-it, test-it, security-scan when it applies, challenge-implementation 1 to 5, wrap-up, handoff.
+Stage order is the chain in AGENTS.md, with security-scan only when it applies.
 
 ## What changes in the stages
 
@@ -32,11 +32,11 @@ Never spend money, use credentials you don't have, deploy, change providers, del
 
 ## The human
 
-A message from the human mid-run wins: follow it. A request to stop ends solo at the next safe point with a one-line status of what's done and what isn't. A bare stage command, mid-run or after the run, gets one line ("solo is running this chain" or "solo already ran this stage") and nothing else. Decide only inside the focus: a pasted handoff's out-of-scope items stay out, and its needs-the-human items stay set aside unless they are the focus.
+A message from the human mid-run wins over solo's plan, never over the hard limits. A request to stop ends solo at the next safe point with a one-line status of what's done and what isn't. A bare stage command, mid-run or after the run, gets one line ("solo is running this chain" or "solo already ran this stage") and nothing else. Decide only inside the focus: a pasted handoff's out-of-scope items stay out, and its needs-the-human items stay set aside unless they are the focus.
 
 ## Ending
 
-The background-work barrier applies. Handoff merges only when every check on the pull request's head commit passed or was skipped (not only required ones) and no review is required; otherwise it leaves the pull request open and names the blocker. If merging deploys anything (a deploy workflow or hosting hook on the base branch), the merge is a deploy: leave it open. Poll in short calls. Zero checks counts as still waiting; checks still running, or still zero, after 15 minutes are not green. The next session's half of the handoff keeps its STOP.
+The background-work barrier applies. Handoff merges only when at least one check on the pull request's head commit passed, every other one passed or was skipped (not only required ones), and no review is required; otherwise it leaves the pull request open and names the blocker. If merging deploys anything (a deploy workflow or hosting hook on the base branch), the merge is a deploy: leave it open. Poll in short calls. Zero checks counts as still waiting; checks still running, or still zero, after 15 minutes are not green. The next session's half of the handoff keeps its STOP.
 
 ## Rationale (recorded so future edits don't drift it)
 

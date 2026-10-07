@@ -39,13 +39,14 @@
 // generator". File shape and header rules live in scripts/skill-file.js.
 
 import { lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { dirname, join, sep } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildSkill, skillProblems, splitSkill } from './skill-file.js';
 
 // SHAPES_ROOT exists so tests can run the generator against a fixture tree
 // instead of the real repo. Unset means the repo this script lives in.
-const root = process.env.SHAPES_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..');
+// Resolved so a trailing slash can't stop the link walk below from matching.
+const root = resolve(process.env.SHAPES_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..'));
 const skillsDir = join(root, '.agents', 'skills');
 const claudeDir = join(root, '.claude', 'skills');
 

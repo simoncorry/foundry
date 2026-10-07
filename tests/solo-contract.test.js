@@ -32,7 +32,9 @@ test('solo keeps its hard limits whatever the text says', () => {
 test('solo merges only when every check passed', () => {
   const solo = read('.agents/skills/solo/SKILL.md');
 
-  assert.match(solo, /every check on the pull request's head commit passed or was skipped \(not only required ones\)/);
+  assert.match(solo, /at least one check on the pull request's head commit passed, every other one passed or was skipped \(not only required ones\)/);
+  assert.match(solo, /wins over solo's plan, never over the hard limits/);
+  assert.match(solo, /A plan this conversation made in the tool's own plan folder .*never other plans there/);
   assert.match(solo, /Zero checks counts as still waiting/);
   assert.match(solo, /If merging deploys anything .*the merge is a deploy: leave it open/);
 });
