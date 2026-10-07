@@ -399,6 +399,13 @@ if (kept.some((k) => k.rel === portable(WIKI_INDEX))) {
     notes.push(`docs/wiki/INDEX.md is yours, so these new Foundry pages aren't listed in it yet: ${unlisted.join(', ')}. Add a line for each.`);
   }
 }
+try {
+  if (JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')).type === 'commonjs') {
+    notes.push('package.json sets "type": "commonjs", so Node reads the scripts/ copies as CommonJS and they fail to load (they are ES modules); the commands still work, but the voice gate, the jargon gate, and the other checks won\'t run until that setting changes.');
+  }
+} catch {
+  // No package.json, or one Node itself would reject: nothing to say here.
+}
 if (kept.length > 0 && history === null) {
   notes.push("this Foundry checkout has no git history, so only files matching this exact version count as Foundry's copies; an older untouched copy shows as kept. Re-run with --overwrite if those are untouched.");
 }
