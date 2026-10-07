@@ -512,7 +512,7 @@ try {
 }
 if (kept.length > 0 && (history === null || shallow)) {
   notes.push(
-    `this Foundry checkout has ${history === null ? 'no git history' : 'only part of its git history (a shallow clone)'}, ` +
+    `this Foundry checkout has ${history === null ? 'no git history the installer can read (a download, git missing, or a folder git refuses to trust)' : 'only part of its git history (a shallow clone)'}, ` +
     "so an older untouched Foundry copy can't be told from your own edits and shows as kept. " +
     `${history === null ? 'Re-run' : 'Run git fetch --unshallow in the Foundry checkout and re-run, or re-run'} with --overwrite if those files are untouched.`
   );

@@ -216,8 +216,8 @@ Frame-it is done: both answers are folded in above. The human types `/solo`, and
 
 - [x] challenge-plan 1 through 5 (plus extra rounds 6 to 8; stopped at the round-8 cap)
 - [x] build-it
-- [ ] test-it
-- [ ] security-scan
+- [x] test-it (7 bugs found and fixed: 1 while writing tests, 6 from the grader)
+- [x] security-scan (6 threat classes, 3 candidates, all demoted, 0 findings)
 - [ ] challenge-implementation 1 through 5
 - [ ] wrap-up (log entry says the session ran solo; distill how the installer tells copies apart into the wiki if it's durable)
 - [ ] handoff (merge when solo's merge rule holds; final report only)
@@ -252,4 +252,6 @@ Frame-it is done: both answers are folded in above. The human types `/solo`, and
 - **A kept skill reports one line per name, not per file.** The plan didn't say. Chose one line naming the skill and saying neither tool copy was installed (`scripts/install.js`, the skills loop), since the decision is per name. Lesson: report at the level the decision is made.
 - **Tool notes left as they were.** Step 8 said to rewrite the re-run sentence in `docs/tool-notes.md`. On reading it, the sentence only says re-running clears old command copies, which is still true. Chose: no edit. Lesson: check a sentence is wrong before planning to rewrite it.
 - **README facts trimmed.** The plan said keep each fact and list any change here. Dropped: the name of the log-rotation script and its refuse-rather-than-misfile behaviour (still in the wrap-up command and the script's own header), and "the surfaces format" from the wiki-pointer sentence (it's in that script's header). Added: security-scan in the session walk-through, which the old list skipped; the new installer behaviour; and the CommonJS gap. Lesson: a voice rewrite is also a fact audit, so diff the sentences.
+- **The grader ran in the foreground.** Test-it says to run it in the background. In this tool, a background result arrives only after the turn ends, and solo runs every stage in one turn. Chose: foreground, with the time limit in its prompt. Lesson: the background rule exists so the run can keep working, and an unattended single-turn run can't wait for a later turn.
+- **The grader's six findings changed behaviour the plan had marked unchanged.** The plan kept old-command removal "unchanged" and always rewrote the command list. The grader showed both broke the plan's own bar. Chose: hold them to the same keep rule (`scripts/install.js`, the old-command loop and the command-list branch). Also: permissions are checked before writing, the report prints after the writes, deleted phrases stay deleted (judged by when each phrase first appeared in Foundry's history), and Windows line endings are recognized. Lesson: a rule like "never touch what isn't ours" has to be applied to every write and delete path, including the ones marked "unchanged".
 - **New note for a CommonJS project.** Not in the plan. Running the installed scripts showed they fail to load in any project whose `package.json` sets `"type": "commonjs"`. The real fix means renaming every script, which reaches the command files with 489 bytes of budget left, so it's outside this focus. Chose: the installer now says so in a note (`scripts/install.js`, the notes block), and the gap is recorded under Solo decisions. Lesson: running shipped scripts inside a real install finds what reading them doesn't.
