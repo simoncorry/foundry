@@ -398,5 +398,25 @@
  {
   "bad": "test bites",
   "good": "the test fails when the code is wrong"
+ },
+ {
+  "bad": "blob id",
+  "good": "git's fingerprint for a file's exact contents"
+ },
+ {
+  "bad": "sync point",
+  "good": "the newest Foundry entry the project already has"
+ },
+ {
+  "bad": "rendered text",
+  "good": "the text the installer would write"
+ },
+ {
+  "bad": "type collision",
+  "good": "a file sitting where a folder should be, or the reverse"
+ },
+ {
+  "bad": "classification loop",
+  "good": "the pass that decides what happens to each file"
  }
 ]
