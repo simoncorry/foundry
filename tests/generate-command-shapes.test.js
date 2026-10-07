@@ -333,6 +333,48 @@ test('a linked skill folder is refused cleanly, whether or not its target exists
   }
 });
 
+test('a link deeper on any write path is refused before anything is written through it', () => {
+  const cases = [
+    ['a linked agents folder inside a skill', '.agents/skills/alpha/agents', (root, outside) => {
+      writeSource(root, 'alpha', 'Real skill. Body.\n');
+      symlinkSync(outside, join(root, '.agents', 'skills', 'alpha', 'agents'));
+    }],
+    ['a linked skills folder', '.agents/skills', (root, outside) => {
+      mkdirSync(join(outside, 'alpha'));
+      writeFileSync(join(outside, 'alpha', 'SKILL.md'), 'Real skill. Body.\n');
+      rmSync(join(root, '.agents', 'skills'), { recursive: true });
+      symlinkSync(outside, join(root, '.agents', 'skills'));
+    }],
+    ['a linked Claude skills folder', '.claude/skills', (root, outside) => {
+      writeSource(root, 'alpha', 'Real skill. Body.\n');
+      mkdirSync(join(root, '.claude'));
+      symlinkSync(outside, join(root, '.claude', 'skills'));
+    }],
+    ['a linked SKILL.md', '.agents/skills/alpha/SKILL.md', (root, outside) => {
+      writeFileSync(join(outside, 'real.md'), 'Linked file. Body.\n');
+      mkdirSync(join(root, '.agents', 'skills', 'alpha'));
+      symlinkSync(join(outside, 'real.md'), sourcePath(root, 'alpha'));
+    }],
+  ];
+  for (const [label, linkPath, arrange] of cases) {
+    withFixture((root) => {
+      const outside = mkdtempSync(join(tmpdir(), 'foundry-shapes-outside-'));
+      try {
+        arrange(root, outside);
+        const before = { root: snapshot(root), outside: snapshot(outside) };
+        for (const args of [[], ['--confirm']]) {
+          const r = run(root, args);
+          assert.equal(r.code, 1, `${label} ${args}`);
+          assert.ok(r.stdout.includes(`[shapes] INVALID: ${linkPath}: is a link`), `${label}: ${r.stdout}`);
+        }
+        assert.deepEqual({ root: snapshot(root), outside: snapshot(outside) }, before, label);
+      } finally {
+        rmSync(outside, { recursive: true, force: true });
+      }
+    });
+  }
+});
+
 test('the real repo tree is in sync and the old command folders are gone', () => {
   // Read-only against the repo itself: proves the committed copies match
   // the committed skill files, the same thing CI asserts on every push.

@@ -39,7 +39,7 @@
 // generator". File shape and header rules live in scripts/skill-file.js.
 
 import { lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildSkill, skillProblems, splitSkill } from './skill-file.js';
 
@@ -82,6 +82,22 @@ function listSkills() {
   return { names, problems };
 }
 
+// A link anywhere between the root and a file this script writes (a linked
+// agents/ folder, a linked .claude/skills, a linked SKILL.md) would send the
+// write elsewhere, so every write path is walked, not only the folder names.
+function linkOnPath(path) {
+  for (let p = path; p.startsWith(root + sep); p = dirname(p)) {
+    let entry;
+    try {
+      entry = lstatSync(p);
+    } catch {
+      continue;
+    }
+    if (entry.isSymbolicLink()) return p;
+  }
+  return null;
+}
+
 function expected() {
   const files = new Map();
   const { names, problems } = listSkills();
@@ -103,6 +119,10 @@ function expected() {
     files.set(join(skillsDir, name, 'agents', 'openai.yaml'), POLICY_YAML);
   }
   files.set(join(root, 'scripts', 'foundry-commands.json'), `${JSON.stringify(names, null, 2)}\n`);
+  const links = new Set([...files.keys()].map(linkOnPath).filter(Boolean));
+  for (const link of links) {
+    problems.push(`${rel(link)}: is a link; the generator writes through it, so replace it with a real folder or file`);
+  }
   return { files, problems, names };
 }
 
