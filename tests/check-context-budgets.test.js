@@ -76,6 +76,37 @@ test('counts only the body, never the generated header', () => {
   }
 });
 
+test("with Foundry's command list present, only listed skills count, so a project's own skills never do", () => {
+  const root = makeFixture({ commands: { 'build-it': '1234', 'their-own': 'x'.repeat(500) } });
+  mkdirSync(join(root, '.agents', 'skills', 'shipping', 'land-it'), { recursive: true });
+  writeFileSync(join(root, '.agents', 'skills', 'shipping', 'land-it', 'SKILL.md'), 'nested\n');
+  mkdirSync(join(root, 'scripts'));
+  writeFileSync(join(root, 'scripts', 'foundry-commands.json'), '["build-it"]\n');
+  try {
+    const measurement = measureContextBudgets(root);
+    assert.deepEqual(measurement.commandFiles, [{ path: '.agents/skills/build-it/SKILL.md', bytes: 4 }]);
+    assert.equal(measurement.commandCount, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a damaged command list, or a listed command with no skill file, fails loudly', () => {
+  const root = makeFixture();
+  mkdirSync(join(root, 'scripts'));
+  const list = join(root, 'scripts', 'foundry-commands.json');
+  try {
+    writeFileSync(list, '["alpha",');
+    assert.throws(() => measureContextBudgets(root), /foundry-commands\.json is not valid JSON/);
+    writeFileSync(list, '{"alpha": true}');
+    assert.throws(() => measureContextBudgets(root), /must be a list of command names/);
+    writeFileSync(list, '["alpha", "gone"]');
+    assert.throws(() => measureContextBudgets(root), /gone\/SKILL\.md could not be read/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('the exact boundaries pass and one byte over fails with an exact overage', () => {
   const root = makeFixture({
     agents: 'a'.repeat(CONTEXT_LIMITS.agentsBytes),

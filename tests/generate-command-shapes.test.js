@@ -179,6 +179,20 @@ test('confirm mode passes on a freshly generated tree', () => {
   });
 });
 
+test("the generator writes Foundry's command list, and confirm catches a stale one", () => {
+  withFixture((root) => {
+    writeSource(root, 'zeta', 'Zeta body. More.\n');
+    writeSource(root, 'alpha', 'Alpha body. More.\n');
+    assert.equal(run(root).code, 0);
+    const list = join(root, 'scripts', 'foundry-commands.json');
+    assert.equal(readFileSync(list, 'utf8'), '[\n  "alpha",\n  "zeta"\n]\n');
+    writeFileSync(list, '[\n  "alpha"\n]\n');
+    const confirm = run(root, ['--confirm']);
+    assert.equal(confirm.code, 1);
+    assert.ok(confirm.stdout.includes('DRIFT: scripts/foundry-commands.json'));
+  });
+});
+
 test('confirm mode fails when the Claude copy is edited directly', () => {
   withFixture((root) => {
     writeSource(root, 'alpha', 'First sentence here. Second.\n');

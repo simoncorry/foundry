@@ -86,6 +86,6 @@ If your tool is something else entirely, the floor still holds: every command is
 
 ## If you edit anything
 
-Each command's source of truth is its skill file, `.agents/skills/<name>/SKILL.md`. Edit the instructions below its short header and run `npm run shapes`. That rebuilds the header from the folder name and first sentence, and refreshes the Claude Code copy and the Codex policy file. `npm run check` fails if a header goes stale or a generated copy is edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push to main and on every pull request.
+Each command's source of truth is its skill file, `.agents/skills/<name>/SKILL.md`. Edit the instructions below its short header and run `npm run shapes`. That rebuilds the header from the folder name and first sentence, and refreshes the Claude Code copy, the Codex policy file, and `scripts/foundry-commands.json`. That last file lists Foundry's commands, so the context-budget check in a project that installs Foundry counts only those and never the project's own skills. `npm run check` fails if a header goes stale or a generated copy is edited directly. The same check runs the tests, fails on any reference to a file or heading that doesn't exist, and fails on listed jargon in committed prose; one workflow runs all of it on every push to main and on every pull request.
 
 MIT licensed.

@@ -4,6 +4,11 @@
 // budgets the project promises. The source commands are the skill bodies in
 // .agents/skills/; their generated headers and the Claude copies are derived
 // from those bodies, so counting them would charge the same prose twice.
+//
+// A project that installs Foundry keeps its own skills in .agents/skills/
+// too, so only the names in scripts/foundry-commands.json (written by the
+// generator, copied by the installer) are counted. Without that list, every
+// folder there counts, which is right for Foundry's own checkout.
 
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -24,12 +29,28 @@ function readNormalized(path, label) {
   }
 }
 
-export function measureContextBudgets(rootDir) {
-  const root = resolve(rootDir);
-  const agentsPath = join(root, 'AGENTS.md');
-  const commandsDir = join(root, '.agents', 'skills');
-  const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
-
+function commandNames(root, commandsDir) {
+  const listPath = join(root, 'scripts', 'foundry-commands.json');
+  let listText = null;
+  try {
+    listText = readFileSync(listPath, 'utf8');
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw new Error(`scripts/foundry-commands.json could not be read (${error?.code ?? error?.message})`);
+    }
+  }
+  if (listText !== null) {
+    let names;
+    try {
+      names = JSON.parse(listText);
+    } catch (error) {
+      throw new Error(`scripts/foundry-commands.json is not valid JSON (${error.message})`);
+    }
+    if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+$/.test(name))) {
+      throw new Error('scripts/foundry-commands.json must be a list of command names');
+    }
+    return names;
+  }
   let entries;
   try {
     entries = readdirSync(commandsDir, { withFileTypes: true });
@@ -37,11 +58,18 @@ export function measureContextBudgets(rootDir) {
     const reason = error?.code ?? error?.message ?? 'unknown read error';
     throw new Error(`source command directory could not be read (${reason})`);
   }
+  return entries.filter((entry) => entry.isDirectory() || entry.isSymbolicLink()).map((entry) => entry.name);
+}
 
-  const commandFiles = entries
-    .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
-    .map((entry) => {
-      const path = join(commandsDir, entry.name, 'SKILL.md');
+export function measureContextBudgets(rootDir) {
+  const root = resolve(rootDir);
+  const agentsPath = join(root, 'AGENTS.md');
+  const commandsDir = join(root, '.agents', 'skills');
+  const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
+
+  const commandFiles = commandNames(root, commandsDir)
+    .map((name) => {
+      const path = join(commandsDir, name, 'SKILL.md');
       const portablePath = relative(root, path).split(sep).join('/');
       const { body } = splitSkill(readNormalized(path, portablePath));
       return { path: portablePath, bytes: Buffer.byteLength(body, 'utf8') };

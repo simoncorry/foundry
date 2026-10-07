@@ -19,6 +19,16 @@
 //                                       deliberate checkpoint instead of
 //                                       auto-firing. Codex ignores the
 //                                       header's manual-only switch.
+//   scripts/foundry-commands.json       the list of Foundry's command names.
+//                                       A project that installs Foundry
+//                                       keeps its own skills in the same
+//                                       .agents/skills/ folder, so the
+//                                       context-budget check counts only
+//                                       the names on this list.
+//
+// This is Foundry's own tool: it treats every folder in .agents/skills/ as a
+// Foundry command. Don't run it in a project that installed Foundry; skills
+// of the project's own would be rewritten as commands.
 //
 // Every skill is checked before any file is written, so one bad header
 // can't leave the others half-rewritten. Confirm mode exists so a check can
@@ -71,6 +81,7 @@ function expected() {
     files.set(join(claudeDir, name, 'SKILL.md'), skill);
     files.set(join(skillsDir, name, 'agents', 'openai.yaml'), POLICY_YAML);
   }
+  files.set(join(root, 'scripts', 'foundry-commands.json'), `${JSON.stringify(listSkills(), null, 2)}\n`);
   return { files, problems };
 }
 

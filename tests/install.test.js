@@ -30,6 +30,11 @@ test('fresh install populates the documented set and only that set', () => {
   assert.equal(readFileSync(join(target, 'CLAUDE.md'), 'utf8'), readFileSync(join(repoRoot, 'CLAUDE.md'), 'utf8'));
   assert.ok(existsSync(join(target, 'scripts', 'phrase-list.json')));
   assert.ok(existsSync(join(target, 'scripts', 'check-context-budgets.js')));
+  assert.equal(
+    readFileSync(join(target, 'scripts', 'foundry-commands.json'), 'utf8'),
+    readFileSync(join(repoRoot, 'scripts', 'foundry-commands.json'), 'utf8'),
+    'the budget check needs the list to tell Foundry commands from the project\'s own skills'
+  );
   assert.ok(!existsSync(join(target, 'docs')), 'wiki must stay home without --wiki');
   assert.ok(!existsSync(join(target, 'README.md')), 'Foundry\'s own README must not ride along');
   assert.ok(!existsSync(join(target, 'tests')), 'Foundry\'s tests must not ride along');
