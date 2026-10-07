@@ -40,7 +40,9 @@ const claudeDir = join(root, '.claude', 'skills');
 const POLICY_YAML = 'policy:\n  allow_implicit_invocation: false\n';
 
 const rel = (path) => path.replace(root + '/', '');
-const sameText = (a, b) => a.replace(/\r\n?/g, '\n') === b.replace(/\r\n?/g, '\n');
+// A Windows checkout turns \n into \r\n, which is not drift. A lone \r is
+// not a line break any tool here reads, so it stays a difference.
+const sameText = (a, b) => a.replace(/\r\n/g, '\n') === b.replace(/\r\n/g, '\n');
 
 function listSkills() {
   if (!existsSync(skillsDir)) return [];

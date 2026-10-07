@@ -141,6 +141,31 @@ test('a Windows checkout with \\r\\n line endings confirms clean without a rewri
   });
 });
 
+test('a Claude copy with lone \\r line endings is drift, and a write run repairs it', () => {
+  withFixture((root) => {
+    writeSource(root, 'alpha', 'First sentence here. Second.\n\nMore.\n');
+    assert.equal(run(root).code, 0);
+    const good = readFileSync(claudePath(root, 'alpha'), 'utf8');
+    writeFileSync(claudePath(root, 'alpha'), good.replace(/\n/g, '\r'));
+    const confirm = run(root, ['--confirm']);
+    assert.equal(confirm.code, 1);
+    assert.ok(confirm.stdout.includes('DRIFT: .claude/skills/alpha/SKILL.md (differs from source)'));
+    assert.equal(run(root).code, 0);
+    assert.equal(readFileSync(claudePath(root, 'alpha'), 'utf8'), good);
+  });
+});
+
+test('a source file with lone \\r line endings refuses instead of stacking a header', () => {
+  withFixture((root) => {
+    const oldMac = buildSkill('alpha', 'Old Mac file. Body.\n').replace(/\n/g, '\r');
+    writeSource(root, 'alpha', oldMac);
+    const r = run(root);
+    assert.equal(r.code, 1);
+    assert.ok(r.stdout.includes('still starts with a --- line'));
+    assert.equal(readFileSync(sourcePath(root, 'alpha'), 'utf8'), oldMac);
+  });
+});
+
 test('confirm mode passes on a freshly generated tree', () => {
   withFixture((root) => {
     writeSource(root, 'alpha', 'First sentence here. Second.\n');

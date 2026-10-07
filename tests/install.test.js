@@ -59,6 +59,22 @@ test("re-install removes old Foundry command copies and keeps the project's own"
   rmSync(target, { recursive: true, force: true });
 });
 
+test('a commands folder that links outside the project is never cleaned', () => {
+  const base = mkdtempSync(join(tmpdir(), 'install-linked-commands-'));
+  const outside = join(base, 'outside');
+  const target = join(base, 'project');
+  mkdirSync(outside, { recursive: true });
+  mkdirSync(join(target, '.cursor'), { recursive: true });
+  writeFileSync(join(outside, 'start-up.md'), 'someone else\'s file\n');
+  symlinkSync(outside, join(target, '.cursor', 'commands'));
+  const r = run([target]);
+  assert.equal(r.code, 0);
+  assert.ok(r.out.includes('skip .cursor/commands: it resolves outside the project'), r.out);
+  assert.equal(readFileSync(join(outside, 'start-up.md'), 'utf8'), 'someone else\'s file\n');
+  assert.ok(r.out.includes('0 removed'));
+  rmSync(base, { recursive: true, force: true });
+});
+
 test('a copy that fails partway leaves the old command copies in place', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-partial-'));
   mkdirSync(join(target, '.cursor', 'commands'), { recursive: true });

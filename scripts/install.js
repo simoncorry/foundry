@@ -134,6 +134,13 @@ const commandNames = new Set(
 const removed = [];
 for (const dir of OLD_COMMAND_DIRS) {
   if (!existsSync(join(target, dir)) || !statSync(join(target, dir)).isDirectory()) continue;
+  // A commands folder that resolves outside the target (a symlink, or a
+  // symlinked parent) holds someone else's files; never delete there.
+  const realDir = realpathSync(join(target, dir));
+  if (!realDir.startsWith(realpathSync(target) + sep)) {
+    console.log(`  skip ${dir}: it resolves outside the project (${realDir}), so nothing there is removed`);
+    continue;
+  }
   for (const entry of readdirSync(join(target, dir), { withFileTypes: true })) {
     if (entry.isDirectory() || !entry.name.endsWith('.md')) continue;
     if (commandNames.has(entry.name.replace(/\.md$/, ''))) removed.push(join(dir, entry.name));
