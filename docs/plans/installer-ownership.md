@@ -1,6 +1,6 @@
 ---
 id: installer-ownership
-status: IN_PROGRESS
+status: SHIPPED
 created: 2026-10-07
 ---
 
@@ -218,7 +218,7 @@ Frame-it is done: both answers are folded in above. The human types `/solo`, and
 - [x] build-it
 - [x] test-it (7 bugs found and fixed: 1 while writing tests, 6 from the grader)
 - [x] security-scan (6 threat classes, 3 candidates, all demoted, 0 findings)
-- [ ] challenge-implementation 1 through 5
+- [x] challenge-implementation 1 through 5 (1 bug found and fixed in round 3; rounds 4 and 5 clean)
 - [ ] wrap-up (log entry says the session ran solo; distill how the installer tells copies apart into the wiki if it's durable)
 - [ ] handoff (merge when solo's merge rule holds; final report only)
 - [ ] Human reads the Solo decisions and the pull request description (closes the first-real-run item)
@@ -245,6 +245,11 @@ Frame-it is done: both answers are folded in above. The human types `/solo`, and
 
 - **Fix the link checker's missing-`package.json` crash in this session?** Options: fix it, or leave it out of scope. Chose: fix it. Why: it ships into every installed project, the new install test runs it there, and the human asked for no leftover tasks.
 - **Fix Foundry's scripts failing in a CommonJS project?** Options: rename every script so it loads anywhere; make the installer warn; or say nothing. Chose: warn, and leave the rename out. Why: the rename touches every command file, which have 489 bytes of budget left, and it sits outside this session's focus (what the installer may overwrite). Solo only decides inside the focus. This is the one known gap the session leaves, named in the handoff.
+- **README voice: keep "genuinely impressive" and "riders"?** Options: strip them as AI tells, or keep them. Chose: keep both. Why: "genuinely impressive" is your own phrase from the published post, and "riders" survived your own edits to the README twice.
+- **README voice: borrow lines from your post?** Options: write fresh lines, or reuse yours. Chose: reuse two, "agents (like juniors) want to look useful and will flag everything" and "My agent cites Dieter Rams at me during reviews now". Why: your calibration prefers real receipts and your own rough beats over an agent's cleaner version.
+- **README: keep the manual-copy install route?** Options: drop it for the installer only, or keep a one-line mention. Chose: keep it as a parenthetical. Why: it's still true, and dropping it silently would change a fact.
+- **Delete this plan in the same pull request?** Options: leave it SHIPPED for a later session to delete (the usual order), or delete it now. Chose: delete it now, with these decisions copied into the pull request description. Why: you asked for nothing left over, and the plan's history stays in git.
+- **A Foundry file the project deleted comes back on the next run.** Options: track past installs in a record file, or accept it. Chose: accept it, and keep it out of the README's promises. Why: telling "deleted on purpose" from "never installed" needs a record of installs, which this design deliberately avoids. The phrase list is the one place history can tell the difference, and it does.
 
 ## Deviations
 
