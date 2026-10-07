@@ -15,7 +15,7 @@
 //      from this check is a known, accepted limit.
 //   2. Backticked tokens: `/command-name`, `node scripts/x.js`,
 //      `npm run alias`, `docs/plans/`, `AGENTS.md § Heading`. Each
-//      resolves against the tree (commands to .cursor/commands/,
+//      resolves against the tree (commands to .agents/skills/<name>/SKILL.md,
 //      aliases to package.json scripts, paths from the repo root).
 //   3. Plain-prose section citations: "follow AGENTS.md § Voice." The
 //      heading capture runs to the first . , ; : ) or end of line;
@@ -25,9 +25,9 @@
 //      punctuation stripped before resolving).
 //
 // Placeholder segments (<slug>, {name}, *) in a path require only the
-// static directory prefix to exist. Generated folders (.claude/,
-// .agents/) are skipped; the shapes confirm already guards byte parity
-// with the source, so checking the source checks them too.
+// static directory prefix to exist. The generated Claude copies (.claude/)
+// are skipped; the shapes confirm already guards byte parity with the
+// skill files in .agents/skills/, so checking those checks them too.
 //
 // Fence handling is line-based: a line opening with ``` or ~~~ toggles
 // code-block state. Four-backtick fences and indented code blocks are
@@ -64,7 +64,7 @@ function listMarkdownFiles() {
     }
   };
   walk('docs');
-  walk('.cursor/commands');
+  walk('.agents/skills');
   return files.filter((f) => existsSync(join(root, f)));
 }
 
@@ -151,8 +151,8 @@ function checkBacktickToken(file, line, raw) {
   if (/^\/[a-z0-9][a-z0-9-]*(\s|$)/.test(token)) {
     const name = token.split(/\s+/)[0];
     if (EXTERNAL_COMMANDS.has(name)) return;
-    if (!existsSync(join(root, '.cursor', 'commands', `${name.slice(1)}.md`))) {
-      fail(file, line, `\`${raw}\``, `no command file .cursor/commands/${name.slice(1)}.md`);
+    if (!existsSync(join(root, '.agents', 'skills', name.slice(1), 'SKILL.md'))) {
+      fail(file, line, `\`${raw}\``, `no command file .agents/skills/${name.slice(1)}/SKILL.md`);
     }
     return;
   }

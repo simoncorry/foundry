@@ -5,21 +5,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const commandsDir = join(repoRoot, '.cursor', 'commands');
+const commandsDir = join(repoRoot, '.agents', 'skills');
 
 function command(name) {
-  return readFileSync(join(commandsDir, `${name}.md`), 'utf8');
+  return readFileSync(join(commandsDir, name, 'SKILL.md'), 'utf8');
 }
 
 function commandsWithLiveGate(overrides = {}) {
   return readdirSync(commandsDir)
-    .filter((file) => file.endsWith('.md'))
-    .filter((file) => {
-      const name = file.replace(/\.md$/, '');
-      const body = overrides[name] ?? readFileSync(join(commandsDir, file), 'utf8');
-      return body.includes('voice-gate.js');
-    })
-    .map((file) => file.replace(/\.md$/, ''))
+    .filter((name) => (overrides[name] ?? command(name)).includes('voice-gate.js'))
     .sort();
 }
 

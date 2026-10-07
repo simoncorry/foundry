@@ -11,21 +11,33 @@ import {
   evaluateContextBudgets,
   measureContextBudgets,
 } from '../scripts/check-context-budgets.js';
+import { buildSkill } from '../scripts/skill-file.js';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const script = join(repoRoot, 'scripts', 'check-context-budgets.js');
 const extensionlessScript = script.replace(/\.js$/, '');
 
-function makeFixture({ agents = 'rules\n', commands = { 'alpha.md': 'command\n' } } = {}) {
+function skillFile(root, name) {
+  return join(root, '.agents', 'skills', name, 'SKILL.md');
+}
+
+function makeFixture({ agents = 'rules\n', commands = { alpha: 'command\n' } } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'context-budgets-'));
   writeFileSync(join(root, 'AGENTS.md'), agents);
   if (commands !== null) {
-    mkdirSync(join(root, '.cursor', 'commands'), { recursive: true });
+    mkdirSync(join(root, '.agents', 'skills'), { recursive: true });
     for (const [name, body] of Object.entries(commands)) {
-      writeFileSync(join(root, '.cursor', 'commands', name), body);
+      mkdirSync(join(root, '.agents', 'skills', name), { recursive: true });
+      writeFileSync(skillFile(root, name), body);
     }
+    writeList(root, Object.keys(commands));
   }
   return root;
+}
+
+function writeList(root, names) {
+  mkdirSync(join(root, 'scripts'), { recursive: true });
+  writeFileSync(join(root, 'scripts', 'foundry-commands.json'), `${JSON.stringify(names)}\n`);
 }
 
 function run(root, args = []) {
@@ -41,12 +53,12 @@ function run(root, args = []) {
 }
 
 test('passes ordinary input and reports the measured command set', () => {
-  const root = makeFixture({ commands: { 'beta.md': '12345', 'alpha.md': '123' } });
+  const root = makeFixture({ commands: { beta: '12345', alpha: '123' } });
   try {
     const measurement = measureContextBudgets(root);
     assert.deepEqual(measurement.commandFiles, [
-      { path: '.cursor/commands/beta.md', bytes: 5 },
-      { path: '.cursor/commands/alpha.md', bytes: 3 },
+      { path: '.agents/skills/beta/SKILL.md', bytes: 5 },
+      { path: '.agents/skills/alpha/SKILL.md', bytes: 3 },
     ]);
     assert.equal(measurement.commandBytes, 8);
     assert.equal(measurement.commandCount, 2);
@@ -56,17 +68,57 @@ test('passes ordinary input and reports the measured command set', () => {
   }
 });
 
+test('counts only the body, never the generated header', () => {
+  const body = 'Body text. More.\n';
+  const root = makeFixture({ commands: { alpha: buildSkill('alpha', body), beta: body } });
+  try {
+    const measurement = measureContextBudgets(root);
+    assert.deepEqual(
+      measurement.commandFiles.map((f) => f.bytes),
+      [Buffer.byteLength(body), Buffer.byteLength(body)]
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("with Foundry's command list present, only listed skills count, so a project's own skills never do", () => {
+  const root = makeFixture({ commands: { 'build-it': '1234', 'their-own': 'x'.repeat(500) } });
+  mkdirSync(join(root, '.agents', 'skills', 'shipping', 'land-it'), { recursive: true });
+  writeFileSync(join(root, '.agents', 'skills', 'shipping', 'land-it', 'SKILL.md'), 'nested\n');
+  writeList(root, ['build-it']);
+  try {
+    const measurement = measureContextBudgets(root);
+    assert.deepEqual(measurement.commandFiles, [{ path: '.agents/skills/build-it/SKILL.md', bytes: 4 }]);
+    assert.equal(measurement.commandCount, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a damaged command list, or a listed command with no skill file, fails loudly', () => {
+  const root = makeFixture();
+  const list = join(root, 'scripts', 'foundry-commands.json');
+  try {
+    writeFileSync(list, '["alpha",');
+    assert.throws(() => measureContextBudgets(root), /foundry-commands\.json is not valid JSON/);
+    writeFileSync(list, '{"alpha": true}');
+    assert.throws(() => measureContextBudgets(root), /must be a list of command names/);
+    writeFileSync(list, '["alpha", "gone"]');
+    assert.throws(() => measureContextBudgets(root), /gone\/SKILL\.md could not be read/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('the exact boundaries pass and one byte over fails with an exact overage', () => {
   const root = makeFixture({
     agents: 'a'.repeat(CONTEXT_LIMITS.agentsBytes),
-    commands: { 'alpha.md': 'b'.repeat(CONTEXT_LIMITS.commandBytes) },
+    commands: { alpha: 'b'.repeat(CONTEXT_LIMITS.commandBytes) },
   });
   try {
     assert.equal(evaluateContextBudgets(measureContextBudgets(root)).ok, true);
-    writeFileSync(
-      join(root, '.cursor', 'commands', 'alpha.md'),
-      'b'.repeat(CONTEXT_LIMITS.commandBytes + 1)
-    );
+    writeFileSync(skillFile(root, 'alpha'), 'b'.repeat(CONTEXT_LIMITS.commandBytes + 1));
     const evaluation = evaluateContextBudgets(measureContextBudgets(root));
     assert.deepEqual(evaluation.violations, [
       {
@@ -84,8 +136,8 @@ test('the exact boundaries pass and one byte over fails with an exact overage', 
 });
 
 test('normalizes CRLF and lone CR before measuring', () => {
-  const lf = makeFixture({ agents: 'one\ntwo\n', commands: { 'alpha.md': 'a\nb\n' } });
-  const mixed = makeFixture({ agents: 'one\r\ntwo\r', commands: { 'alpha.md': 'a\r\nb\r' } });
+  const lf = makeFixture({ agents: 'one\ntwo\n', commands: { alpha: 'a\nb\n' } });
+  const mixed = makeFixture({ agents: 'one\r\ntwo\r', commands: { alpha: 'a\r\nb\r' } });
   try {
     assert.deepEqual(measureContextBudgets(mixed), measureContextBudgets(lf));
   } finally {
@@ -94,15 +146,15 @@ test('normalizes CRLF and lone CR before measuring', () => {
   }
 });
 
-test('refuses missing AGENTS.md, a missing command directory, and an empty command directory', () => {
+test('refuses missing AGENTS.md, a missing command list, and an empty one', () => {
   const missingAgents = makeFixture();
   const missingCommands = makeFixture({ commands: null });
   const emptyCommands = makeFixture({ commands: {} });
   rmSync(join(missingAgents, 'AGENTS.md'));
   try {
     assert.throws(() => measureContextBudgets(missingAgents), /AGENTS\.md could not be read/);
-    assert.throws(() => measureContextBudgets(missingCommands), /source command directory could not be read/);
-    assert.throws(() => measureContextBudgets(emptyCommands), /contains no markdown commands/);
+    assert.throws(() => measureContextBudgets(missingCommands), /scripts\/foundry-commands\.json could not be read \(ENOENT\)/);
+    assert.throws(() => measureContextBudgets(emptyCommands), /foundry-commands\.json lists no commands/);
   } finally {
     rmSync(missingAgents, { recursive: true, force: true });
     rmSync(missingCommands, { recursive: true, force: true });
@@ -112,21 +164,23 @@ test('refuses missing AGENTS.md, a missing command directory, and an empty comma
 
 test('refuses an unreadable command file', () => {
   const root = makeFixture();
-  const file = join(root, '.cursor', 'commands', 'alpha.md');
+  const file = skillFile(root, 'alpha');
   chmodSync(file, 0o000);
   try {
-    assert.throws(() => measureContextBudgets(root), /alpha\.md could not be read/);
+    assert.throws(() => measureContextBudgets(root), /alpha\/SKILL\.md could not be read/);
   } finally {
     chmodSync(file, 0o600);
     rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('counts symlinked markdown commands instead of permitting a budget bypass', () => {
+test('counts symlinked skill folders instead of permitting a budget bypass', () => {
   const root = makeFixture({ commands: {} });
-  const target = join(root, 'shared-command.md');
-  writeFileSync(target, 'linked command\n');
-  symlinkSync(target, join(root, '.cursor', 'commands', 'linked.md'));
+  const target = join(root, 'shared-skill');
+  mkdirSync(target);
+  writeFileSync(join(target, 'SKILL.md'), 'linked command\n');
+  symlinkSync(target, join(root, '.agents', 'skills', 'linked'));
+  writeList(root, ['linked']);
   try {
     const measurement = measureContextBudgets(root);
     assert.equal(measurement.commandCount, 1);
@@ -139,14 +193,14 @@ test('counts symlinked markdown commands instead of permitting a budget bypass',
 test('report mode stays informational while check mode enforces the ceiling', () => {
   const root = makeFixture({
     agents: 'a'.repeat(CONTEXT_LIMITS.agentsBytes + 1),
-    commands: { 'small.md': 'x', 'largest.md': 'xxx' },
+    commands: { small: 'x', largest: 'xxx' },
   });
   try {
     const report = run(root);
     assert.equal(report.code, 0);
     assert.ok(report.out.includes('AGENTS.md'));
-    assert.ok(report.out.indexOf('source commands') < report.out.indexOf('.cursor/commands/largest.md'));
-    assert.ok(report.out.indexOf('.cursor/commands/largest.md') < report.out.indexOf('.cursor/commands/small.md'));
+    assert.ok(report.out.indexOf('source commands') < report.out.indexOf('.agents/skills/largest/SKILL.md'));
+    assert.ok(report.out.indexOf('.agents/skills/largest/SKILL.md') < report.out.indexOf('.agents/skills/small/SKILL.md'));
 
     const checked = run(root, ['--check']);
     assert.equal(checked.code, 1);

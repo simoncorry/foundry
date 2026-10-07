@@ -370,5 +370,17 @@
  {
   "bad": "chain has converged",
   "good": "the review rounds aren't finding new issues anymore"
+ },
+ {
+  "bad": "manifest",
+  "good": "list"
+ },
+ {
+  "bad": "dangling symlink",
+  "good": "a link that points at nothing"
+ },
+ {
+  "bad": "TOCTOU",
+  "good": "a race between a check and the write it guards"
  }
 ]

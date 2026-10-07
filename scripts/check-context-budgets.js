@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
 // Keeps Foundry's always-loaded rules and source commands inside the context
-// budgets the project promises. Generated command shapes are derived from the
-// source commands, so counting them again would charge the same prose twice.
+// budgets the project promises. The source commands are the skill bodies in
+// .agents/skills/; their generated headers and the Claude copies are derived
+// from those bodies, so counting them would charge the same prose twice.
+//
+// A project that installs Foundry keeps its own skills in .agents/skills/
+// too, so only the names in scripts/foundry-commands.json (written by the
+// generator, copied by the installer) are counted.
 
-import { readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { splitSkill } from './skill-file.js';
 
 export const CONTEXT_LIMITS = Object.freeze({
   agentsBytes: 8_192,
@@ -22,35 +28,37 @@ function readNormalized(path, label) {
   }
 }
 
+function commandNames(root) {
+  const label = 'scripts/foundry-commands.json';
+  const text = readNormalized(join(root, 'scripts', 'foundry-commands.json'), label);
+  let names;
+  try {
+    names = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON (${error.message})`);
+  }
+  // The pattern also keeps a listed name from climbing out of .agents/skills/.
+  if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+$/.test(name))) {
+    throw new Error(`${label} must be a list of command names`);
+  }
+  if (names.length === 0) throw new Error(`${label} lists no commands`);
+  return names;
+}
+
 export function measureContextBudgets(rootDir) {
   const root = resolve(rootDir);
   const agentsPath = join(root, 'AGENTS.md');
-  const commandsDir = join(root, '.cursor', 'commands');
+  const commandsDir = join(root, '.agents', 'skills');
   const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
 
-  let entries;
-  try {
-    entries = readdirSync(commandsDir, { withFileTypes: true });
-  } catch (error) {
-    const reason = error?.code ?? error?.message ?? 'unknown read error';
-    throw new Error(`source command directory could not be read (${reason})`);
-  }
-
-  const commandFiles = entries
-    .filter((entry) => (entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith('.md'))
-    .map((entry) => {
-      const path = join(commandsDir, entry.name);
+  const commandFiles = commandNames(root)
+    .map((name) => {
+      const path = join(commandsDir, name, 'SKILL.md');
       const portablePath = relative(root, path).split(sep).join('/');
-      return {
-        path: portablePath,
-        bytes: Buffer.byteLength(readNormalized(path, portablePath), 'utf8'),
-      };
+      const { body } = splitSkill(readNormalized(path, portablePath));
+      return { path: portablePath, bytes: Buffer.byteLength(body, 'utf8') };
     })
     .sort((a, b) => b.bytes - a.bytes || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
-
-  if (commandFiles.length === 0) {
-    throw new Error('source command directory contains no markdown commands');
-  }
 
   return {
     agentsBytes,
