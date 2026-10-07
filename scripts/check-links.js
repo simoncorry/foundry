@@ -169,7 +169,10 @@ function checkBacktickToken(file, line, raw) {
   // npm alias: `npm run shapes`.
   if (token.startsWith('npm run ')) {
     const alias = token.split(/\s+/)[2] ?? '';
-    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    // An installed project may have no package.json at all; then no alias
+    // resolves, which is a finding, not a crash.
+    const pkgPath = join(root, 'package.json');
+    const pkg = existsSync(pkgPath) ? JSON.parse(readFileSync(pkgPath, 'utf8')) : {};
     if (!pkg.scripts || !(alias in pkg.scripts)) {
       fail(file, line, `\`${raw}\``, `no "${alias}" script in package.json`);
     }

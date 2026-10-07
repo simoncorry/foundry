@@ -238,6 +238,32 @@ test("an installed project gets solo, and its copy of the generator refuses to t
   rmSync(target, { recursive: true, force: true });
 });
 
+test("every reference in an installed project resolves once the chain's own files exist", () => {
+  const target = mkdtempSync(join(tmpdir(), 'install-links-'));
+  assert.equal(run([target, '--wiki']).code, 0);
+  const checker = join(target, 'scripts', 'check-links.js');
+  const links = () => {
+    try {
+      return { code: 0, out: execFileSync('node', [checker], { encoding: 'utf8', stdio: 'pipe' }) };
+    } catch (err) {
+      return { code: err.status, out: `${err.stdout ?? ''}${err.stderr ?? ''}` };
+    }
+  };
+
+  const bare = links();
+  assert.equal(bare.code, 1, 'without a package.json the npm aliases cannot resolve');
+  assert.ok(bare.out.includes('no "check" script in package.json'), bare.out);
+  assert.ok(!bare.out.includes('ENOENT'), 'a missing package.json is a finding, not a crash');
+
+  writeFileSync(join(target, 'package.json'), JSON.stringify({ type: 'module', scripts: { check: 'x', shapes: 'x', test: 'x' } }));
+  mkdirSync(join(target, 'docs', 'plans'), { recursive: true });
+  mkdirSync(join(target, 'docs', 'sessions'), { recursive: true });
+  writeFileSync(join(target, 'docs', 'sessions', 'LOG.md'), '# Sessions\n');
+  const full = links();
+  assert.equal(full.code, 0, full.out);
+  rmSync(target, { recursive: true, force: true });
+});
+
 test('--wiki includes the reference library', () => {
   const target = mkdtempSync(join(tmpdir(), 'install-wiki-'));
   const r = run([target, '--wiki']);
