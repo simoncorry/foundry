@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 // Keeps Foundry's always-loaded rules and source commands inside the context
-// budgets the project promises. Generated command shapes are derived from the
-// source commands, so counting them again would charge the same prose twice.
+// budgets the project promises. The source commands are the skill bodies in
+// .agents/skills/; their generated headers and the Claude copies are derived
+// from those bodies, so counting them would charge the same prose twice.
 
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { splitSkill } from './skill-file.js';
 
 export const CONTEXT_LIMITS = Object.freeze({
   agentsBytes: 8_192,
@@ -25,7 +27,7 @@ function readNormalized(path, label) {
 export function measureContextBudgets(rootDir) {
   const root = resolve(rootDir);
   const agentsPath = join(root, 'AGENTS.md');
-  const commandsDir = join(root, '.cursor', 'commands');
+  const commandsDir = join(root, '.agents', 'skills');
   const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
 
   let entries;
@@ -37,14 +39,12 @@ export function measureContextBudgets(rootDir) {
   }
 
   const commandFiles = entries
-    .filter((entry) => (entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith('.md'))
+    .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
     .map((entry) => {
-      const path = join(commandsDir, entry.name);
+      const path = join(commandsDir, entry.name, 'SKILL.md');
       const portablePath = relative(root, path).split(sep).join('/');
-      return {
-        path: portablePath,
-        bytes: Buffer.byteLength(readNormalized(path, portablePath), 'utf8'),
-      };
+      const { body } = splitSkill(readNormalized(path, portablePath));
+      return { path: portablePath, bytes: Buffer.byteLength(body, 'utf8') };
     })
     .sort((a, b) => b.bytes - a.bytes || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 

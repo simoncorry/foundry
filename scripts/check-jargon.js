@@ -19,7 +19,7 @@
 //
 // What counts as prose: markdown text outside fenced blocks and inline
 // code spans, in README.md, AGENTS.md, CLAUDE.md, docs/, and the
-// command source folder; plus comment text (line and block) in
+// skill files in .agents/skills/; plus comment text (line and block) in
 // scripts/ and tests/ JavaScript. String and template literals are
 // code, not prose: test fixtures quote listed phrases on purpose.
 // One markdown exception: a document wrapped whole in a single outer
@@ -40,8 +40,8 @@
 // honest fix here is this note, not a nested-template state stack for a
 // construct nobody writes.
 //
-// Generated folders (.claude/, .agents/) are skipped: byte parity with
-// the source is already guarded, so scanning the source covers them.
+// The generated Claude copies (.claude/) are skipped: byte parity with
+// the skill files is already guarded, so scanning those covers them.
 // scripts/phrase-list.json is data, not prose; it contains every bad
 // phrase by definition.
 
@@ -84,7 +84,7 @@ function listMarkdownFiles() {
     }
   };
   walk('docs');
-  walk('.cursor/commands');
+  walk('.agents/skills');
   return files.filter((f) => existsSync(join(root, f)));
 }
 
