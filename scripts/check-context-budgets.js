@@ -7,7 +7,10 @@
 //
 // A project that installs Foundry keeps its own skills in .agents/skills/
 // too, so only the names in scripts/foundry-commands.json (written by the
-// generator, copied by the installer) are counted.
+// generator, rewritten by the installer to the commands it installed) are
+// counted. A project's AGENTS.md likewise holds the project's own rules
+// around Foundry's marked section, and only that section is Foundry's to
+// budget.
 
 import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -18,6 +21,41 @@ export const CONTEXT_LIMITS = Object.freeze({
   agentsBytes: 8_192,
   commandBytes: 112_640,
 });
+
+// The installer writes Foundry's rules between these two lines in a
+// project's AGENTS.md. Foundry's own AGENTS.md carries neither.
+export const FOUNDRY_SECTION = Object.freeze({
+  start: "<!-- Foundry's rules start here. The Foundry installer replaces everything down to the end line, so write your own rules above or below these two lines, never between them. -->",
+  end: "<!-- Foundry's rules end here. -->",
+});
+
+// Where Foundry's section sits in an AGENTS.md: null when the file has no
+// markers, else the character range between the start and end lines. A
+// marker counts only as a whole line (a trailing carriage return allowed),
+// so prose that mentions one never matches. Anything other than exactly one
+// start line followed by one end line throws, because guessing where
+// Foundry's text ends could cut into the project's own rules.
+export function foundrySection(text) {
+  const starts = [];
+  const ends = [];
+  let offset = 0;
+  for (const line of text.split('\n')) {
+    const bare = line.endsWith('\r') ? line.slice(0, -1) : line;
+    const after = offset + line.length + 1;
+    if (bare === FOUNDRY_SECTION.start) starts.push({ at: offset, after });
+    if (bare === FOUNDRY_SECTION.end) ends.push({ at: offset, after });
+    offset = after;
+  }
+  if (starts.length === 0 && ends.length === 0) return null;
+  if (starts.length !== 1 || ends.length !== 1 || ends[0].at < starts[0].after) {
+    throw new Error(
+      `AGENTS.md has ${starts.length} start and ${ends.length} end line(s) for Foundry's section` +
+      `${starts.length === 1 && ends.length === 1 ? ', with the end line first' : ''}; ` +
+      'it needs exactly one of each, start first'
+    );
+  }
+  return { innerStart: starts[0].after, innerEnd: ends[0].at };
+}
 
 function readNormalized(path, label) {
   try {
@@ -49,7 +87,9 @@ export function measureContextBudgets(rootDir) {
   const root = resolve(rootDir);
   const agentsPath = join(root, 'AGENTS.md');
   const commandsDir = join(root, '.agents', 'skills');
-  const agentsBytes = Buffer.byteLength(readNormalized(agentsPath, 'AGENTS.md'), 'utf8');
+  const agentsText = readNormalized(agentsPath, 'AGENTS.md');
+  const section = foundrySection(agentsText);
+  const agentsBytes = Buffer.byteLength(section ? agentsText.slice(section.innerStart, section.innerEnd) : agentsText, 'utf8');
 
   const commandFiles = commandNames(root)
     .map((name) => {

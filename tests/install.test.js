@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FOUNDRY_SECTION } from '../scripts/check-context-budgets.js';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const script = join(repoRoot, 'scripts', 'install.js');
@@ -38,7 +39,9 @@ test('fresh install populates the documented set and only that set', () => {
   assert.ok(!existsSync(join(target, 'docs')), 'wiki must stay home without --wiki');
   assert.ok(!existsSync(join(target, 'README.md')), 'Foundry\'s own README must not ride along');
   assert.ok(!existsSync(join(target, 'tests')), 'Foundry\'s tests must not ride along');
-  assert.ok(r.out.includes('0 updated, 0 removed, 0 unchanged'));
+  assert.ok(r.out.includes('0 updated, 0 merged, 0 kept, 0 removed, 0 unchanged'), r.out);
+  const agents = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+  assert.equal(agents, `${FOUNDRY_SECTION.start}\n${readFileSync(join(repoRoot, 'AGENTS.md'), 'utf8')}${FOUNDRY_SECTION.end}\n`);
   assert.ok(r.out.includes('create CLAUDE.md'));
   assert.ok(!r.out.includes('note:'), 'a fresh target needs no CLAUDE.md notice');
   rmSync(target, { recursive: true, force: true });
@@ -129,7 +132,10 @@ test('a copy that fails partway leaves the old command copies in place', () => {
   writeFileSync(join(target, '.agents'), 'not a folder\n');
   const r = run([target]);
   assert.notEqual(r.code, 0);
+  assert.ok(r.out.includes('in the way: .agents/skills/'), r.out);
+  assert.ok(r.out.includes('nothing written'), r.out);
   assert.equal(readFileSync(join(target, '.cursor', 'commands', 'build-it.md'), 'utf8'), 'an older Foundry copy\n');
+  assert.deepEqual(readdirSync(target).sort(), ['.agents', '.cursor'], 'a refused run writes nothing');
   rmSync(target, { recursive: true, force: true });
 });
 
@@ -241,16 +247,17 @@ test('--wiki includes the reference library', () => {
   rmSync(target, { recursive: true, force: true });
 });
 
-test('re-run updates a changed copy and reports it', () => {
+test("a re-run keeps a project's own AGENTS.md and adds Foundry's section below it", () => {
   const target = mkdtempSync(join(tmpdir(), 'install-rerun-'));
   run([target]);
   writeFileSync(join(target, 'AGENTS.md'), 'locally diverged\n');
   const r = run([target]);
   assert.equal(r.code, 0);
-  assert.ok(r.out.includes('update AGENTS.md'));
-  assert.ok(r.out.includes('1 updated'));
-  const restored = readFileSync(join(target, 'AGENTS.md'), 'utf8');
-  assert.ok(restored.includes('Foundry'), 'overwrite restores the upstream copy');
+  assert.ok(r.out.includes("merge AGENTS.md (Foundry's section added below your rules)"), r.out);
+  assert.ok(r.out.includes('0 updated, 1 merged'), r.out);
+  const merged = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+  assert.ok(merged.startsWith('locally diverged\n\n'), 'the project\'s lines stay first');
+  assert.ok(merged.endsWith(`${readFileSync(join(repoRoot, 'AGENTS.md'), 'utf8')}${FOUNDRY_SECTION.end}\n`));
   rmSync(target, { recursive: true, force: true });
 });
 
